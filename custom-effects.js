@@ -308,7 +308,7 @@ function drawArrow() {
 
   var init = function() {
     renderer = new THREE.WebGLRenderer({
-      canvas: document.getElementById("map"),
+      canvas: document.getElementById("arrow"),
       antialias: true
     });
     renderer.setSize(ww, wh);
