@@ -8,7 +8,6 @@ $(document).on('click', '[action-clear-filters]', function() {
 });
 
 QueryStringRouter.onParamChange('filter', function(value) {
-	console.log(value);
 	if (typeof value !== 'undefined') {
 		$('[is-filterable]').filter('[category-'+value+']').removeClass('hidden');
 		$('[is-filterable]').not('[category-'+value+']').addClass('hidden');
