@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--  This site was created in Webflow. http://www.webflow.com -->
-<!--  Last Published: Sat Sep 16 2017 15:51:14 GMT+0000 (UTC)  -->
+<!--  Last Published: Sat Sep 16 2017 16:11:13 GMT+0000 (UTC)  -->
 <html data-wf-page="58bc2abaadcba9575e87d18d" data-wf-site="58b2b66ffbbec15a489e9f5e">
 <head>
   <meta charset="utf-8">
@@ -232,7 +232,7 @@
           <div class="card__content w-clearfix">
             <div class="card__image-on-left">
               <div class="card__image-on-left-inner">
-                <div class="smartphone-widget" data-ix="smartphone-3d">
+                <div class="is-3d-isometric smartphone-widget" data-ix="smartphone-3d" has-isometric-effect="true">
                   <div class="smartphone-widget__outer-phone">
                     <div class="smartphone-widget__screen-wrapper">
                       <div class="screencast-video w-background-video" data-autoplay="data-autoplay" data-loop="data-loop" data-poster-url="videos/SVID_20170617_112313_imovie-poster-00001.jpg" data-video-urls="videos/SVID_20170617_112313_imovie-transcode.webm,videos/SVID_20170617_112313_imovie-transcode.mp4" data-wf-ignore="data-wf-ignore"></div><img src="images/2017-06-15-16_39_07-Rymuj-to-Przeglądaj-i-oceniaj-najlepsze-rymy.png"></div>
@@ -496,42 +496,5 @@
     border-radius: 1%;
 }
 </style>
-  <script>
-//pause videos when not in scroll view
-$(document).ready(function() {
-    var media = $('video');
-    var tolerancePixel = 80;
-    //pause all videos except first
-    media.each(function(index, el) {
-        if (index > 0) {
-        	  $(this).get(0).pause();
-        } else {
-            $(this).get(0).play();
-        }
-    });
-    //add playsinline attribute for all vidoes
-    media.each(function(index, el) {
-        $(this).attr('playsinline', '');
-    });
-    //fix webflow placement of video poster
-    $('.screencast-video .w-background-video-poster').css('background-position', '50% 0%');
-    function checkMedia() {
-        var scrollTop = $(window).scrollTop() + tolerancePixel;
-        var scrollBottom = $(window).scrollTop() + $(window).height() - tolerancePixel;
-        media.each(function(index, el) {
-            var yTopMedia = $(this).offset().top;
-            var yBottomMedia = $(this).height() + yTopMedia;
-            if (scrollTop < yBottomMedia && scrollBottom > yTopMedia) {
-                $(this).get(0).play();
-                $(this).closest('.screencast-video').removeClass('is-hidden');
-            } else {
-                $(this).get(0).pause();
-                $(this).closest('.screencast-video').addClass('is-hidden');
-            }
-        });
-    }
-    $(document).on('scroll', checkMedia);
-});
-</script>
 </body>
 </html>
