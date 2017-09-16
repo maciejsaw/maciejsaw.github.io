@@ -629,6 +629,8 @@ a {
 }
 
 .submenu__navbar {
+  padding-right: 17px;
+  padding-left: 17px;
   text-align: center;
 }
 
