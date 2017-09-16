@@ -679,7 +679,7 @@ a {
   position: absolute;
   left: 0px;
   top: 0px;
-  right: 0px;
+  right: 16px;
   bottom: 0px;
   display: block;
   border-top-left-radius: 5px;
@@ -1133,6 +1133,9 @@ a {
   }
   .card__image-on-left-inner.for-msws {
     right: 0%;
+  }
+  .card__image-on-left-inner.for-egnyte {
+    margin-right: 0px;
   }
   .browser-widget {
     right: 16px;
