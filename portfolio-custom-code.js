@@ -9,8 +9,11 @@ $(document).on('click', '[action-clear-filters]', function() {
 
 QueryStringRouter.onParamChange('filter', function(value) {
 	if (typeof value !== 'undefined') {
-		$('[is-filterable]').filter('[category-'+value+']').removeClass('hidden');
-		$('[is-filterable]').not('[category-'+value+']').addClass('hidden');
+		$('[is-filterable]').addClass('hidden');
+		setTimeout(function() {
+			$('[is-filterable]').filter('[category-'+value+']').removeClass('hidden');
+			$('[is-filterable]').not('[category-'+value+']').addClass('hidden');
+		}, 800);
 		$('[action-toggle-filter]').removeClass('is-active');
 		$('[action-clear-filters]').removeClass('is-active');
 		$('[action-toggle-filter='+value+']').addClass('is-active');
