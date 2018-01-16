@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <title>DOTTS Concept</title>
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
 
   
@@ -15,10 +16,9 @@
 
 <body>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<body>
+  <body>
   <div class="viewport__wrapper">
+    <div class="points-count" js-points-counter>0</div>
     <div class="viewport__inner">
       <div class="viewport__moving" js-viewport-moving>
         <div class="background-layer">
@@ -37,9 +37,8 @@
           <div class="background__ring is-12"></div>
         </div>
         <div class="game-layer" js-game-layer>
-          <div class="circle" 
-               js-clickable-circle initial-circle
-               style="top: 0px; left: 0px;">
+          <div class="circle-wrapper" style="top: 0px; left: 0px;">
+            <div class="circle is-initial-circle" js-initial-clickable-circle></div>
           </div>
         </div>
       </div>
