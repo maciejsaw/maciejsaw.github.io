@@ -170,3 +170,11 @@ $(document).on('click touchstart', '[js-initial-clickable-circle]', function(eve
 /*on init*/
 prepareNewGame();
 startInitialCircleUpbeatAnimations();
+
+//try to block swipe gestures and pinch
+$(document).on('touchmove', function(event) {
+  event = event.originalEvent || event;
+  if (event.scale !== 1) {
+     event.preventDefault();
+  }
+}, false);
