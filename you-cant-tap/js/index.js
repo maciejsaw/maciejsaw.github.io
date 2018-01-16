@@ -159,7 +159,7 @@ function stopRingsUpbeatAnimations() {
 function startNewGame() {
   generateCircles();
   startSpeedIncreaseTimers();
-  startRingsUpbeatAnimations();
+  //startRingsUpbeatAnimations();
 }
 
 $(document).on('click touchstart', '[js-initial-clickable-circle]', function(event) {
