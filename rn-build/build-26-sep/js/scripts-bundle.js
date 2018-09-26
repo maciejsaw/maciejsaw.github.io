@@ -4920,7 +4920,7 @@ function renderDealDetailsInModal(dealId) {
     }
     else {
       $('[deal-info__payment-period]').text(paymentPeriodString.substr(0,1).toUpperCase() + paymentPeriodString.substr(1));
-      $('[deal-info__payment-period-bullet').text("Faktury z prognozowanym zużyciem " + paymentPeriodString);
+      $('[deal-info__payment-period-bullet]').text("Faktury z prognozowanym zużyciem " + paymentPeriodString);
     }
 
     $('[deal-info__savings-yearly]').text(dealToShow.savingsYearly + "zł");
