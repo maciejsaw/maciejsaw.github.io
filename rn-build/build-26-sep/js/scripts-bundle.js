@@ -5161,7 +5161,7 @@ QueryStringRouter.onParamChange('subpage', function(value) {
 
 $(document).on('click', '[action-select-deal]', function() {
 	QueryStringRouter.setParam('subpage', 'your-data');
-	var clickedId = $(this).closest('[data-bind-repeatable-clone').attr('item-data-id');
+	var clickedId = $(this).closest('[data-bind-repeatable-clone]').attr('item-data-id');
 	QueryStringRouter.setParam('chosenDeal__electricity', clickedId, {doNotCreateHistoryState: true});
 });
 
