@@ -4928,8 +4928,8 @@ function renderDealDetailsInModal(dealId) {
 
     var newDealFees = getDealFees(dealToShow);
     var currentDealFees = getDealFees(ReactiveLocalStorage.getParam('currentConditions'), isCurrent = "true");
-    $('[deal-info__current-usage').text(currentDealFees.currentMonthlyUsage + " kWh");
-    $('[deal-info__current-yearly-usage').text(currentDealFees.currentYearlyUsage + " kWh");
+    $('[deal-info__current-usage]').text(currentDealFees.currentMonthlyUsage + " kWh");
+    $('[deal-info__current-yearly-usage]').text(currentDealFees.currentYearlyUsage + " kWh");
 
     $('[deal-info__future-seller-savings]').text(dealToShow.savingsYearly);
 
