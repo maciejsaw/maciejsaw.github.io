@@ -690,23 +690,19 @@ a {
 .card__image-on-left-inner.for-msws {
   z-index: 0;
   border-radius: 5px 5px 0px 0px;
-  background-image: -webkit-linear-gradient(115deg, #f90, #fae969);
   background-image: linear-gradient(335deg, #f90, #fae969);
 }
 
 .card__image-on-left-inner.for-rymujto {
   right: 0%;
-  background-image: -webkit-linear-gradient(298deg, #fff, #dadada);
   background-image: linear-gradient(152deg, #fff, #dadada);
 }
 
 .card__image-on-left-inner.for-zapping {
-  background-image: -webkit-radial-gradient(circle farthest-corner at 0% 0%, #e12d28, rgba(90, 15, 27, .46) 59%, rgba(26, 4, 16, 0) 83%);
   background-image: radial-gradient(circle farthest-corner at 0% 0%, #e12d28, rgba(90, 15, 27, .46) 59%, rgba(26, 4, 16, 0) 83%);
 }
 
 .card__image-on-left-inner.for-moodlight {
-  background-image: -webkit-linear-gradient(302deg, #0a1f30, rgba(1, 9, 24, .46) 33%, transparent);
   background-image: linear-gradient(148deg, #0a1f30, rgba(1, 9, 24, .46) 33%, transparent);
 }
 
@@ -715,7 +711,6 @@ a {
 }
 
 .card__image-on-left-inner.for-internetowy-kantor {
-  background-image: -webkit-linear-gradient(313deg, hsla(240, 3%, 92%, .4), #6e737b 56%);
   background-image: linear-gradient(137deg, hsla(240, 3%, 92%, .4), #6e737b 56%);
 }
 
@@ -758,7 +753,7 @@ a {
   bottom: 0px;
   z-index: 1;
   height: 65px;
-  background-image: -webkit-linear-gradient(270deg, transparent, rgba(0, 0, 0, .07));
+  background-image: -webkit-gradient(linear, left top, left bottom, from(transparent), to(rgba(0, 0, 0, .07)));
   background-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, .07));
 }
 
@@ -771,7 +766,7 @@ a {
 }
 
 .card__image-on-left-bottom-vignette.is-darker {
-  background-image: -webkit-linear-gradient(270deg, transparent, rgba(0, 0, 0, .1));
+  background-image: -webkit-gradient(linear, left top, left bottom, from(transparent), to(rgba(0, 0, 0, .1)));
   background-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, .1));
 }
 
@@ -781,7 +776,6 @@ a {
   top: 0px;
   right: 0px;
   bottom: 0px;
-  background-image: -webkit-radial-gradient(circle farthest-corner at 50% 50%, rgba(36, 37, 41, 0) 9%, rgba(36, 37, 41, .1));
   background-image: radial-gradient(circle farthest-corner at 50% 50%, rgba(36, 37, 41, 0) 9%, rgba(36, 37, 41, .1));
 }
 
@@ -794,27 +788,22 @@ a {
 }
 
 .card__fullscreen-background.for-msws {
-  background-image: -webkit-linear-gradient(124deg, #f90, #fae969);
   background-image: linear-gradient(326deg, #f90, #fae969);
 }
 
 .card__fullscreen-background.for-moodlight {
-  background-image: -webkit-linear-gradient(142deg, #000, #010918 42%, #0a1f30);
   background-image: linear-gradient(308deg, #000, #010918 42%, #0a1f30);
 }
 
 .card__fullscreen-background.for-rymujto {
-  background-image: -webkit-linear-gradient(306deg, #fff, #e9e9e9);
   background-image: linear-gradient(144deg, #fff, #e9e9e9);
 }
 
 .card__fullscreen-background.for-zapping {
-  background-image: -webkit-radial-gradient(circle farthest-corner at 23% -3%, #e12d28, #5a0f1b 64%, #1a0410);
   background-image: radial-gradient(circle farthest-corner at 23% -3%, #e12d28, #5a0f1b 64%, #1a0410);
 }
 
 .card__fullscreen-background.for-egnyte {
-  background-image: -webkit-linear-gradient(134deg, #049890, #257e8a 46%, #00435d 86%);
   background-image: linear-gradient(316deg, #049890, #257e8a 46%, #00435d 86%);
 }
 
@@ -830,7 +819,7 @@ a {
 }
 
 .card__fullscreen-background.for-generic-image {
-  background-image: -webkit-linear-gradient(270deg, #eee, #eee);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#eee));
   background-image: linear-gradient(180deg, #eee, #eee);
 }
 
@@ -869,7 +858,6 @@ a {
   height: 100%;
   border-radius: 13px;
   background-color: #030302;
-  background-image: -webkit-linear-gradient(137deg, #0a0906, #444);
   background-image: linear-gradient(313deg, #0a0906, #444);
   box-shadow: 0 23px 80px -12px rgba(5, 6, 8, .45), -1px 4px 0 0 #666;
 }
@@ -1012,7 +1000,7 @@ a {
   bottom: 0px;
   z-index: 1;
   height: 65px;
-  background-image: -webkit-linear-gradient(270deg, transparent, rgba(0, 0, 0, .07));
+  background-image: -webkit-gradient(linear, left top, left bottom, from(transparent), to(rgba(0, 0, 0, .07)));
   background-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, .07));
 }
 
@@ -1031,7 +1019,7 @@ a {
   bottom: 0px;
   z-index: 1;
   height: 28px;
-  background-image: -webkit-linear-gradient(270deg, transparent, rgba(0, 0, 0, .07));
+  background-image: -webkit-gradient(linear, left top, left bottom, from(transparent), to(rgba(0, 0, 0, .07)));
   background-image: linear-gradient(180deg, transparent, rgba(0, 0, 0, .07));
 }
 
