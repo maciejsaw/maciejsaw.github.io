@@ -614,6 +614,7 @@ a {
 
 .cards__card-holder.is-music {
   padding-top: 19px;
+  padding-bottom: 43px;
 }
 
 .card__image-on-left {
@@ -1623,6 +1624,13 @@ a {
     padding-left: 0px;
   }
 
+  .card__text-on-right.is-music-widget {
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 auto;
+    -ms-flex: 0 auto;
+    flex: 0 auto;
+  }
+
   .card__content {
     padding-right: 32px;
     padding-left: 32px;
@@ -1871,6 +1879,13 @@ a {
 
   .card__image-on-left.for-smartphone {
     min-height: 420px;
+  }
+
+  .card__text-on-right {
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 auto;
+    -ms-flex: 0 auto;
+    flex: 0 auto;
   }
 
   .card__content {
