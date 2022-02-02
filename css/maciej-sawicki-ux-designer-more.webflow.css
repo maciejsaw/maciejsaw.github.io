@@ -182,13 +182,11 @@ a {
 
 .navbar__leftside {
   width: 20%;
-  height: 100%;
   float: left;
 }
 
 .navbar__rightside {
   width: 80%;
-  height: 100%;
   float: left;
   text-align: right;
 }
@@ -409,8 +407,8 @@ a {
 
 .skills__header {
   max-width: 500px;
-  font-size: 48px;
-  line-height: 1.33em;
+  font-size: 44px;
+  line-height: 1.4em;
   font-weight: 600;
 }
 
@@ -418,7 +416,7 @@ a {
   max-width: 480px;
   margin-top: 31px;
   font-size: 16px;
-  line-height: 1.7em;
+  line-height: 1.9em;
 }
 
 .skills__learn-more-link {
@@ -1741,7 +1739,10 @@ a {
   }
 
   .navbar {
-    position: relative;
+    position: static;
+    left: auto;
+    top: auto;
+    right: auto;
     background-color: #000;
   }
 
@@ -1781,6 +1782,7 @@ a {
     position: -webkit-sticky;
     position: sticky;
     top: 0px;
+    z-index: 2;
     width: 100%;
     background-color: #000;
   }
