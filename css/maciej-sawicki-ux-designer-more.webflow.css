@@ -201,6 +201,7 @@ a {
   color: #0a0906;
   font-size: 14px;
   font-weight: 600;
+  text-align: center;
 }
 
 .button:hover {
@@ -524,6 +525,10 @@ a {
 
 .main-content-wrapper {
   padding-top: 64px;
+}
+
+.main-content-wrapper.is-with-padding-bottom {
+  padding-bottom: 64px;
 }
 
 .content-with-gray-background {
@@ -1269,11 +1274,19 @@ a {
 }
 
 .portfolio__iframe-widget.is-youtube {
-  padding-top: 56.25%;
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  right: 0%;
+  bottom: 0%;
 }
 
 .skills__button-holder {
   margin-top: 29px;
+}
+
+.music-widget.is-youtube {
+  padding-top: 56.25%;
 }
 
 .portfolio-embed {
@@ -1935,6 +1948,10 @@ a {
 
   .hero__centered {
     max-width: 100%;
+  }
+
+  .body-wrapper {
+    padding-bottom: 193px;
   }
 
   .navbar__menu {
