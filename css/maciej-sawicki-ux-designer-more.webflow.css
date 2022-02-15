@@ -1264,8 +1264,12 @@ a {
   opacity: 0;
 }
 
-.portfolio__soundcloud-widget {
+.portfolio__iframe-widget {
   width: 100%;
+}
+
+.portfolio__iframe-widget.is-youtube {
+  padding-top: 56.25%;
 }
 
 .skills__button-holder {
@@ -1695,7 +1699,7 @@ a {
     width: 100%;
   }
 
-  .portfolio__soundcloud-widget {
+  .portfolio__iframe-widget {
     width: 100%;
   }
 
