@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      background-color: #f0f0f0;
+    }
+    #startButton {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+  <title>Gra dla dzieci</title>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <button id="startButton">Rozpocznij grę</button>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startButton = document.getElementById('startButton');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let carImg = new Image();
+    carImg.src = 'https://img.freepik.com/darmowe-ikony/samochod_318-536376.jpg?w=2000';
+
+    let car = {
+      x: 50,
+      y: canvas.height / 2 - 25,
+      width: 70,
+      height: 70,
+      speedY: 0
+    };
+
+    let obstacles = [];
+    let score = 0;
+    let animationId;
+    let gameActive = false;
+
+    function drawCar() {
+      ctx.drawImage(carImg, car.x, car.y, car.width, car.height);
+    }
+
+    function drawObstacles() {
+      for (const obstacle of obstacles) {
+        ctx.fillStyle = getRandomColor();
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      }
+    }
+
+    function moveCar(e) {
+      if (gameActive) {
+        if (e.type === 'touchstart' || e.type === 'touchmove') {
+          car.y = e.touches[0].clientY - car.height / 2;
+        } else if (e.type === 'mousemove') {
+          car.y = e.clientY - car.height / 2;
+        }
+      }
+    }
+
+    function generateObstacles() {
+      if (Math.random() < 0.005) {
+        const height = Math.random() * canvas.height * 0.4;
+        const gap = 150 + Math.random() * 150;
+        const obstacle = {
+          x: canvas.width,
+          y: 0,
+          width: 30,
+          height: height
+        };
+        const obstacle2 = {
+          x: canvas.width,
+          y: height + gap,
+          width: 30,
+          height: canvas.height - height - gap
+        };
+        obstacles.push(obstacle, obstacle2);
+      }
+    }
+
+    function updateObstacles() {
+      for (const obstacle of obstacles) {
+        obstacle.x -= 1;
+
+        // Sprawdzanie kolizji
+        if (
+          car.x < obstacle.x + obstacle.width &&
+          car.x + car.width > obstacle.x &&
+          car.y < obstacle.y + obstacle.height &&
+          car.y + car.height > obstacle.y
+        ) {
+          endGame();
+          return;
+        }
+      }
+      // Usuwanie przeszkód poza ekranem
+      obstacles = obstacles.filter((obstacle) => obstacle.x + obstacle.width > 0);
+}
+function drawScore() {
+  ctx.fillStyle = 'black';
+  ctx.font = '24px Arial';
+  ctx.fillText(`Wynik: ${Math.floor(score)}`, 10, 30);
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawCar();
+  generateObstacles();
+  updateObstacles();
+  drawObstacles();
+  drawScore();
+
+  score += 0.01;
+
+  animationId = requestAnimationFrame(gameLoop);
+}
+
+function startGame() {
+  if (!gameActive) {
+    gameActive = true;
+    startButton.style.display = 'none';
+    canvas.style.cursor = 'none';
+    gameLoop();
+  }
+}
+
+function endGame() {
+  gameActive = false;
+  cancelAnimationFrame(animationId);
+  startButton.style.display = 'block';
+  canvas.style.cursor = 'default';
+  score = 0;
+  obstacles = [];
+  car.y = canvas.height / 2 - 25;
+}
+
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+canvas.addEventListener('touchstart', moveCar);
+canvas.addEventListener('touchmove', moveCar);
+canvas.addEventListener('mousemove', moveCar);
+
+startButton.addEventListener('click', startGame);
+  </script>
+</body>
+</html>
