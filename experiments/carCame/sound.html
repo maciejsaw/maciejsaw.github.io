@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Saw Wave Generator</title>
+  </head>
+  <body>
+    <h1>Saw Wave Generator</h1>
+    <p>Move your mouse horizontally or vertically to change the frequency and volume of the saw wave.</p>
+    <button onclick="startAudio()">Start Audio</button>
+    <script>
+      let audioContext1, oscillator1, gainNode1, frequency1 = 200, volume1 = 0.5, targetFrequency1 = 200, targetVolume1 = 0.5;
+      let audioContext2, oscillator2, gainNode2, frequency2 = 200, volume2 = 0.5, targetFrequency2 = 200, targetVolume2 = 0.5;
+      let lastMoveTime1 = 0;
+      let lastMoveTime2 = 0;
+
+      const startAudio = () => {
+        audioContext1 = new (window.AudioContext || window.webkitAudioContext)();
+        oscillator1 = audioContext1.createOscillator();
+        gainNode1 = audioContext1.createGain();
+        oscillator1.type = 'sine';
+        gainNode1.gain.value = volume1;
+        oscillator1.connect(gainNode1);
+        gainNode1.connect(audioContext1.destination);
+        oscillator1.start();
+        document.addEventListener('mousemove', ({ movementX, movementY }) => {
+          const speed = Math.abs(movementX) / (Date.now() - lastMoveTime1);
+          if (movementX > 0) {
+            targetFrequency1 = 200 + Math.abs(movementX * 25) * (0.9 + Math.random() * 0.2) + (Math.random() - 0.5) * 20;
+          } else {
+            targetFrequency1 = Math.max(150, frequency1 - speed * 50);
+          }
+          targetVolume1 = 0.5 + Math.random() * 0.1;
+          lastMoveTime1 = Date.now();
+        });
+        setInterval(() => {
+          const currentTime = Date.now();
+          const timeSinceLastMove = currentTime - lastMoveTime1;
+          if (timeSinceLastMove > 500) {
+            targetFrequency1 = 200 + (Math.random() - 0.5) * 20;
+            targetVolume1 = 0.5 + Math.random() * 0.1;
+          }
+          if (isFinite(targetFrequency1) && isFinite(targetVolume1)) {
+            frequency1 += (targetFrequency1 - frequency1) * 0.1;
+            oscillator1.frequency.setValueAtTime(frequency1, audioContext1.currentTime);
+            const volumeMod = Math.random() * 0.1 - 0.05;
+            volume1 += (targetVolume1 - volume1 + volumeMod) * 0.05;
+            gainNode1.gain.setValueAtTime(volume1, audioContext1.currentTime);
+          }
+        }, 20);
+        setInterval(() => {
+          frequency1 += (200 - frequency1) * 0.1;
+          oscillator1.frequency.setValueAtTime(frequency1, audioContext1.currentTime);
+          volume1 += (0.5 - volume1) * 0.05;
+          gainNode1.gain.setValueAtTime(volume1, audioContext1.currentTime);
+        }, 20);
+
+        audioContext2 = new (window.AudioContext || window.webkitAudioContext)();
+oscillator2 = audioContext2.createOscillator();
+gainNode2 = audioContext2.createGain();
+oscillator2.type = 'sine';
+gainNode2.gain.value = volume2;
+oscillator2.connect(gainNode2);
+gainNode2.connect(audioContext2.destination);
+oscillator2.start();
+document.addEventListener('mousemove', ({ movementX, movementY }) => {
+const speed = Math.abs(movementX) / (Date.now() - lastMoveTime2);
+if (movementX > 0) {
+targetFrequency2 = 200 + Math.abs(movementX * 25) * (0.9 + Math.random() * 0.2) + (Math.random() - 0.5) * 20;
+} else {
+targetFrequency2 = Math.max(150, frequency2 - speed * 50);
+}
+targetVolume2 = 0.5 + Math.random() * 0.1;
+lastMoveTime2 = Date.now();
+});
+setInterval(() => {
+const currentTime = Date.now();
+const timeSinceLastMove = currentTime - lastMoveTime2;
+if (timeSinceLastMove > 500) {
+targetFrequency2 = 200 + (Math.random() - 0.5) * 20;
+targetVolume2 = 0.5 + Math.random() * 0.1;
+}
+if (isFinite(targetFrequency2) && isFinite(targetVolume2)) {
+frequency2 += (targetFrequency2 - frequency2) * 0.1;
+oscillator2.frequency.setValueAtTime(frequency2, audioContext2.currentTime);
+const volumeMod = Math.random() * 0.1 - 0.05;
+volume2 += (targetVolume2 - volume2 + volumeMod) * 0.05;
+gainNode2.gain.setValueAtTime(volume2, audioContext2.currentTime);
+}
+}, 20);
+setInterval(() => {
+frequency2 += (200 - frequency2) * 0.1;
+oscillator2.frequency.setValueAtTime(frequency2, audioContext2.currentTime);
+volume2 += (0.5 - volume2) * 0.05;
+gainNode2.gain.setValueAtTime(volume2, audioContext2.currentTime);
+}, 20);
+};
+</script>
+
+  </body>
+</html>

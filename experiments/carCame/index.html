@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+         body {
+         margin: 0;
+         overflow: hidden;
+         }
+         canvas {
+         display: block;
+         background-color: #f0f0f0;
+         }
+         #startButton {
+         position: absolute;
+         top: 40%;
+         left: 50%;
+         transform: translate(-50%, -50%);
+         }
+         #carSelection {
+         position: absolute;
+         top: 60%;
+         left: 50%;
+         transform: translate(-50%, -50%);
+         display: flex;
+         justify-content: center;
+         gap: 10px;
+         }
+         .carOption {
+         width: 70px;
+         height: 70px;
+         cursor: pointer;
+         object-fit: contain;
+         background-size: contain;
+         }
+         .selected {
+         border: 2px solid blue;
+         }
+         #previousScore {
+         position: absolute;
+         top: 20%;
+         left: 50%;
+         transform: translate(-50%, -50%);
+         font-size: 24px;
+         font-family: Arial, sans-serif;
+         }
+      </style>
+      <title>Gra dla dzieci</title>
+   </head>
+   <body>
+      <canvas id="gameCanvas"></canvas>
+      <button id="startButton">Rozpocznij grę</button>
+      <div id="carSelection">
+         <img class="carOption selected" src="https://emoji.aranja.com/static/emoji-data/img-apple-160/1f697.png">
+         <img class="carOption" src="https://emoji.aranja.com/static/emoji-data/img-apple-160/1f68c.png">
+         <img class="carOption" src="https://emoji.aranja.com/static/emoji-data/img-apple-160/1f699.png">
+         <img class="carOption" src="https://emoji.aranja.com/static/emoji-data/img-apple-160/1f69a.png">
+         <img class="carOption" src="https://emoji.aranja.com/static/emoji-data/img-apple-160/1f69c.png">
+         <img class="carOption" src="https://emoji.aranja.com/static/emoji-data/img-apple-160/1f692.png">
+         <img class="carOption" src="https://emoji.aranja.com/static/emoji-data/img-apple-160/1f69b.png">
+         <img class="carOption" src="https://emoji.aranja.com/static/emoji-data/img-apple-160/1f695.png">
+      </div>
+      <div id="previousScore"></div>
+      <script src="script.js"></script>
+   </body>
+</html>
