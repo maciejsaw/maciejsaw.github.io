@@ -28,6 +28,7 @@ function handlePointerMove(x, y, timestamp) {
 
     let frequency = map(x, 0, canvas.width, 100, 500);
     let transitionTime = 0.1;
+    let gainTransitionTime = 0.1; // 100ms transition time for gain ramp
 
     oscillator.frequency.linearRampToValueAtTime(frequency, audioContext.currentTime + transitionTime);
 
@@ -38,24 +39,42 @@ function handlePointerMove(x, y, timestamp) {
         let maxSpeed = canvas.height;
         let gain = map(speed, 0, maxSpeed, 0, 1);
 
-        gainNode.gain.linearRampToValueAtTime(gain, audioContext.currentTime + transitionTime);
+        gainNode.gain.linearRampToValueAtTime(gain, audioContext.currentTime + gainTransitionTime);
     } else {
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + transitionTime);
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + gainTransitionTime);
     }
 
     lastMousePosition = { x: x, y: y };
     lastTimestamp = timestamp;
 
     mouseMoveTimeout = setTimeout(() => {
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + transitionTime);
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + gainTransitionTime);
     }, 100);
 }
+
+
 
 function handlePointerLeave() {
     if (oscillator) {
         oscillator.stop();
         oscillator = null;
     }
+    lastMousePosition = null;
+    lastTimestamp = null;
+}
+
+function handlePointerEnd() {
+    let transitionTime = 0.1; // 100ms transition time for gain ramp
+
+    if (oscillator) {
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + transitionTime);
+
+        setTimeout(() => {
+            oscillator.stop();
+            oscillator = null;
+        }, transitionTime * 1000);
+    }
+
     lastMousePosition = null;
     lastTimestamp = null;
 }
@@ -72,7 +91,14 @@ canvas.addEventListener('touchmove', (event) => {
     handlePointerMove(touch.clientX, touch.clientY, event.timeStamp);
 });
 
-canvas.addEventListener('touchend', handlePointerLeave);
+canvas.addEventListener('mouseleave', handlePointerEnd);
+canvas.addEventListener('touchend', handlePointerEnd);
+
+canvas.addEventListener('touchstart', (event) => {
+    event.preventDefault();
+    let touch = event.touches[0];
+    handlePointerMove(touch.clientX, touch.clientY, event.timeStamp);
+});
 
 function createOscillator() {
     let osc = audioContext.createOscillator();
