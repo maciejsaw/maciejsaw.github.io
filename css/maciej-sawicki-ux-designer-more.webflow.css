@@ -22,7 +22,6 @@ body {
 }
 
 h1 {
-  letter-spacing: 0;
   margin-top: 20px;
   margin-bottom: 18px;
   font-size: 44px;
@@ -268,7 +267,7 @@ a {
   justify-content: center;
   align-items: stretch;
   min-height: 50vh;
-  padding: 112px 26px;
+  padding: 112px 60px;
   display: flex;
   position: relative;
 }
@@ -1683,6 +1682,11 @@ a {
     width: 100%;
   }
 
+  .skills__section {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
   .skills__section.for-photography {
     background-position: -276px 0;
   }
@@ -1729,6 +1733,10 @@ a {
   .card__content {
     padding-left: 0;
     padding-right: 0;
+  }
+
+  .card__date, .card__paragraph-text {
+    font-size: 14px;
   }
 
   .transparent-filler-for-proportions.for-smartphone {
