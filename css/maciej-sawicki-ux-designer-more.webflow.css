@@ -951,13 +951,12 @@ a {
   border-radius: 8px;
   flex-direction: column;
   width: 100%;
-  max-height: 100%;
   display: flex;
-  position: relative;
-  top: 0;
-  left: 0;
-  right: 0;
   overflow: hidden;
+}
+
+.screencast-video.in-smartphone {
+  max-height: 100%;
 }
 
 .browser-widget__bar {
