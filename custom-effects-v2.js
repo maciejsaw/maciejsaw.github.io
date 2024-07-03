@@ -24,7 +24,7 @@ function drawTheHeroBackground() {
     var geometry = new THREE.Geometry();
     var material = new THREE.PointsMaterial({
       size: 3,
-      color: 0x43454b,
+      color: 0xf0f0f0,
       sizeAttenuation: false
     });
     for (var y = 0, y2 = imagedata.height; y < y2; y += 2) {
@@ -59,12 +59,14 @@ function drawTheHeroBackground() {
     THREE.ImageUtils.crossOrigin = '';
     renderer = new THREE.WebGLRenderer({
       canvas: document.getElementById("map"),
-      antialias: true
+      antialias: true,
+      alpha: true
     });
     renderer.setSize(ww, wh);
     renderer.setClearColor(0x000000, 0);
 
     scene = new THREE.Scene();
+    scene.background = null;
 
     camera = new THREE.PerspectiveCamera(50, ww / wh, 0.1, 10000);
     camera.position.set(-100, 0, 220);
