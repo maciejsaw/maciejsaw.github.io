@@ -42,7 +42,7 @@ function drawTheHeroBackground() {
             z: 0
           };
 
-          vertex.speed = Math.random() / 200 + 0.010;
+          vertex.speed = Math.random() / 200 + 0.012;
 
           geometry.vertices.push(vertex);
         }
@@ -69,7 +69,7 @@ function drawTheHeroBackground() {
     scene.background = null;
 
     camera = new THREE.PerspectiveCamera(50, ww / wh, 0.1, 10000);
-    camera.position.set(-100, 0, 220);
+    camera.position.set(-100, 0, 180);
     camera.lookAt(centerVector);
     scene.add(camera);
 
@@ -112,7 +112,7 @@ function drawTheHeroBackground() {
     }
 
     particles.geometry.verticesNeedUpdate = true;
-    camera.position.x = Math.sin(a / 5000) * -100;
+    camera.position.x = Math.sin(a / 5000) * 100;
     camera.lookAt(centerVector);
 
     renderer.render(scene, camera);
