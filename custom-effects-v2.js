@@ -25,7 +25,7 @@ function drawTheHeroBackground() {
     var material = new THREE.PointsMaterial({
       size: 3,
       color: 0xf0f0f0,
-      sizeAttenuation: false
+      sizeAttenuation: true
     });
     for (var y = 0, y2 = imagedata.height; y < y2; y += 2) {
       for (var x = 0, x2 = imagedata.width; x < x2; x += 2) {
@@ -42,7 +42,7 @@ function drawTheHeroBackground() {
             z: 0
           };
 
-          vertex.speed = Math.random() / 200 + 0.015;
+          vertex.speed = Math.random() / 200 + 0.010;
 
           geometry.vertices.push(vertex);
         }
@@ -112,7 +112,7 @@ function drawTheHeroBackground() {
     }
 
     particles.geometry.verticesNeedUpdate = true;
-    camera.position.x = Math.sin(a / 5000) * 100;
+    camera.position.x = Math.sin(a / 5000) * -100;
     camera.lookAt(centerVector);
 
     renderer.render(scene, camera);
