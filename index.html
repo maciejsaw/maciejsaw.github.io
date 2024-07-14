@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--  This site was created in Webflow. https://webflow.com  --><!--  Last Published: Tue Jul 02 2024 23:28:08 GMT+0000 (Coordinated Universal Time)  -->
+<!DOCTYPE html><!--  This site was created in Webflow. https://webflow.com  --><!--  Last Published: Sun Jul 14 2024 16:55:10 GMT+0000 (Coordinated Universal Time)  -->
 <html data-wf-page="58b2b66ffbbec15a489e9f5f" data-wf-site="58b2b66ffbbec15a489e9f5e">
 <head>
   <meta charset="utf-8">
@@ -18,10 +18,25 @@
 </head>
 <body>
   <div class="body-wrapper">
+    <div class="hero__background-effect">
+      <div class="background-effect-code-embed w-embed"><canvas id="map"></canvas>
+        <style>
+canvas#map {
+   width: 100%;
+   height: 100%;
+   padding: 0;
+   margin: 0;
+   overflow: hidden;
+}
+</style>
+      </div>
+    </div>
     <nav class="navbar w-clearfix">
       <div class="navbar__leftside">
         <a href="index.html" aria-current="page" class="navbar__logo-link w-inline-block w--current">
-          <div class="navbar__logo"><img src="images/MACIEJSAWICKI.png" width="330" alt=""></div>
+          <div class="navbar__logo">
+            <div class="embed-logo"></div>
+          </div>
         </a>
       </div>
       <div class="navbar__rightside">
@@ -29,14 +44,11 @@
           <a href="index.html" aria-current="page" class="navbar__link is-hidden-for-future w-inline-block w--current">
             <div class="navbar__link-text">Home</div>
           </a>
-          <a href="skills.html" class="navbar__link w-inline-block">
-            <div class="navbar__link-text">Skills</div>
-          </a>
           <a href="portfolio.html" class="navbar__link w-inline-block">
-            <div class="navbar__link-text">My work</div>
+            <div class="navbar__link-text">My Work</div>
           </a>
           <a href="music.html" class="navbar__link w-inline-block">
-            <div class="navbar__link-text">Music</div>
+            <div class="navbar__link-text">My Music</div>
           </a>
           <a href="contact.html" class="navbar__link w-inline-block">
             <div class="navbar__link-text">Contact</div>
@@ -47,45 +59,131 @@
     <div class="hero">
       <div class="hero__container">
         <div class="hero__centered">
-          <h1 class="hero__header">Design and strategy<br>for interactive experiences</h1>
-          <div class="hero__subtext">Hi, I’m Maciej. UX designer, strategist and music producer</div>
+          <h1 class="hero__header">Designing user<strong>‑</strong>friendly products through UX research</h1>
+          <div class="hero__subtext">Hi, I’m Maciej. UX designer by day, music composer by night. Let&#x27;s make your projects sing!</div>
           <a href="portfolio.html" class="hero__button-link w-inline-block">
-            <div class="button">Check out my work</div>
+            <div class="button is-colored">Check out my work</div>
           </a>
         </div>
       </div>
       <div class="hero__background-color"></div>
-      <div class="hero__background-effect">
-        <div class="w-embed"><canvas id="map"></canvas>
-          <style>
-canvas#map {
-   width: 100%;
-   height: 100%;
-   padding: 0;
-   margin: 0;
-   overflow: hidden;
-}
-</style>
+    </div>
+    <div id="skills" class="main-content-wrapper">
+      <div class="skills__section with-logos">
+        <div class="skills__dotted-background-left"></div>
+        <div class="skills__dotted-background-right"></div>
+        <div class="skills__container">
+          <div class="skills__text-content">
+            <h2 class="skills__header">Interaction design &amp; prototyping</h2>
+            <div class="skills__subtext">10+ years of professional experience as a full-time UX/UI designer. Conducted more than 200 user interviews.</div>
+            <div class="skills__button-holder">
+              <a href="portfolio.html" class="skills__button-link w-inline-block">
+                <div class="button is-colored">View my projects</div>
+              </a>
+            </div>
+          </div>
+          <div class="skills__logos-image"></div>
+        </div>
+      </div>
+      <div class="skills__section for-music-production">
+        <div class="skills__container">
+          <div class="skills__text-content">
+            <h2 class="skills__header">Music production</h2>
+            <div class="skills__subtext">I&#x27;ve had the pleasure of composing all kinds of music, and some of my tracks have even been listed in top charts!</div>
+            <div class="skills__button-holder">
+              <a href="music.html" class="skills__button-link w-inline-block">
+                <div class="button is-colored">Listen to music demos</div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="skills__section for-marketing-strategy">
+        <div class="skills__container">
+          <div class="skills__text-content">
+            <h2 class="skills__header">Product strategy consulting</h2>
+            <div class="skills__subtext">Professional experience as a strategist for SASS &amp; FMCG products. Experience as a leader role in several projects &amp; start-ups. </div>
+            <a href="#" class="skills__learn-more-link is-hidden-for-future w-inline-block">
+              <div>Learn more</div>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="skills__section">
+        <div class="skills__container">
+          <div class="skills__image-on-left for-arrow"></div>
+          <div class="skills__text-content">
+            <h2 class="skills__header">Web development</h2>
+            <div class="skills__subtext">Designing and building mobile-friendly websites in Webflow + HTML5, CSS and Javascript.</div>
+          </div>
+        </div>
+      </div>
+      <div class="skills__section for-coding">
+        <div class="skills__container">
+          <div class="skills__text-content is-coding">
+            <h2 class="skills__header">Prototyping with code &amp; no-code</h2>
+            <div class="skills__subtext">Building simple proof-of-concept apps with Webflow, Meteor.js, jQuery, Zoho Creator, etc.</div>
+          </div>
+        </div>
+      </div>
+      <div class="skills__section for-video-editing">
+        <div class="skills__container for-video-editing">
+          <div data-ix="film-3d" class="skills__image-on-left for-film">
+            <div class="skills__film-image-3d"></div>
+          </div>
+          <div class="skills__text-content for-video-editing">
+            <h2 class="skills__header">Video editing &amp; motion design</h2>
+            <div class="skills__subtext">I&#x27;m able to create decent promo videos with simple animations, custom music, sound effects &amp; voiceover copywriting. <a href="https://www.youtube.com/watch?v=l8S4oB5ROrw&amp;ab_channel=BugBug%7CAutomationtestingmadesimple" target="_blank">See example</a>
+            </div>
+            <a href="#" class="skills__learn-more-link is-hidden-for-future w-inline-block">
+              <div>Watch examples</div>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="skills__section for-photography">
+        <div class="skills__container">
+          <div class="skills__text-content">
+            <h2 class="skills__header">Digital photography</h2>
+            <div class="skills__subtext">Capturing moments. Post-processing for professional colors.</div>
+            <a href="#" class="skills__learn-more-link is-hidden-for-future w-inline-block">
+              <div>More pictures</div>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="skills__section for-final-cta">
+        <div class="skills__container for-centered-button">
+          <div class="skills__centered-container">
+            <h2 class="skills__header">See projects</h2>
+            <div class="skills__subtext">See selected works in UX, graphics, strategy, web development and more</div>
+            <a href="portfolio.html" class="skills__centered-button w-inline-block">
+              <div class="button is-colored">View my work</div>
+            </a>
+            <a href="music.html" class="skills__centered-button w-inline-block">
+              <div class="button is-black">Listen to music demos</div>
+            </a>
+          </div>
         </div>
       </div>
     </div>
     <footer class="footer">
       <div class="footer__container w-clearfix">
         <div class="footer__leftside">
+          <a href="portfolio.html" class="footer__link is-last w-inline-block">
+            <div>My Work</div>
+          </a>
+          <a href="music.html" class="footer__link is-last w-inline-block">
+            <div>My Music</div>
+          </a>
           <a href="contact.html" class="footer__link w-inline-block">
             <div>Contact</div>
-          </a>
-          <a href="cookie-policy.html" class="footer__link is-last w-inline-block">
-            <div>Cookie and privacy policy</div>
           </a>
         </div>
         <div class="footer__rightside">
           <div class="footer__link is-small-text">
-            <div>©2017 Maciej Sawicki</div>
+            <div>© 2024 Maciej Sawicki</div>
           </div>
-          <a href="#" class="footer__link is-small-text w-inline-block">
-            <div>Design &amp; Code by Maciej Sawicki</div>
-          </a>
         </div>
       </div>
     </footer>
@@ -101,6 +199,6 @@ canvas#map {
 </script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r72/three.min.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script>
-  <script type="text/javascript" src="https://maciejsawicki.com/custom-effects.js"></script>
+  <script type="text/javascript" src="https://maciejsawicki.com/custom-effects-v2.js"></script>
 </body>
 </html>
