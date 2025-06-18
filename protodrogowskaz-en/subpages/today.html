@@ -1,0 +1,758 @@
+<!DOCTYPE html><!--  This site was created in Webflow. https://webflow.com  --><!--  Last Published: Mon Feb 24 2025 09:49:39 GMT+0000 (Coordinated Universal Time)  -->
+<html data-wf-page="6330922ce4f9008c21c01428" data-wf-site="6330922ce4f9006ed6c0131b">
+<head>
+  <meta charset="utf-8">
+  <title>today</title>
+  <meta content="today" property="og:title">
+  <meta content="today" property="twitter:title">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta content="Webflow" name="generator">
+  <link href="../css/normalize.css" rel="stylesheet" type="text/css">
+  <link href="../css/webflow.css" rel="stylesheet" type="text/css">
+  <link href="../css/protodrogowskaz-hifi-mvp-en.webflow.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+  <script type="text/javascript">WebFont.load({  google: {    families: ["Inconsolata:400,700","Balsamiq Sans:regular,700:latin,latin-ext","Poppins:100,100italic,200,200italic,300,300italic,regular,italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic:latin,latin-ext","Nunito Sans:200,200italic,300,300italic,regular,italic,600,600italic,700,700italic,800,800italic,900,900italic:latin,latin-ext","Inter:regular,500,600,700,800,900:greek-ext,latin","Noto Sans:regular,700:latin,latin-ext","Nunito:regular,500,600,700,800,900,italic:latin,latin-ext","Work Sans:regular,500,600,700,800,900,italic:latin,latin-ext","Roboto:300,regular,italic,500,700,900:latin,latin-ext"]  }});</script>
+  <script src="https://use.typekit.net/vbo6num.js" type="text/javascript"></script>
+  <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+  <script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script>
+  <link href="../images/favicon.png" rel="shortcut icon" type="image/x-icon">
+  <link href="../images/webclip.png" rel="apple-touch-icon">
+  <style>
+.initial-load-overlay {
+  display: block;
+}
+[animation-spin="true"] {
+  -webkit-animation-name: spin;
+  -webkit-animation-duration: 2000ms;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+  -moz-animation-name: spin;
+  -moz-animation-duration: 2000;
+  -moz-animation-iteration-count: infinite;
+  -moz-animation-timing-function: linear;
+  -ms-animation-name: spin;
+  -ms-animation-duration: 2000ms;
+  -ms-animation-iteration-count: infinite;
+  -ms-animation-timing-function: linear;
+  animation-name: spin;
+  animation-duration: 2000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+[is-hidden-on-load] {
+  display: none;
+}
+</style>
+  <link rel="stylesheet" type="text/css" href="https://simplyframework.bitbucket.io/build/css/styles-bundle.css">
+  <link rel="stylesheet" type="text/css" href="https://protodrogowskaz.bitbucket.io/build/css/styles-bundle.css">
+  <!-- Fullscreen app for iOS when you add to homescreen -->
+  <link rel="manifest" href="https://protodrogowskaz.bitbucket.io/src/simply-app/js/general/manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Prototype App">
+  <meta name="apple-mobile-web-app-title" content="Prototype App">
+  <meta name="msapplication-starturl" content="https://protodrogowskaz.webflow.io">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="icon" type="image/png" sizes="256x256" href="https://assets.website-files.com/604f8bf1ab57f5bdab38e39f/6058693bf9e03e563d771ea6_app-clip-generic-mobile.png">
+  <link rel="apple-touch-icon" type="image/png" sizes="256x256" href="https://assets.website-files.com/604f8bf1ab57f5bdab38e39f/6058693bf9e03e563d771ea6_app-clip-generic-mobile.png">
+  <!-- Fullscreen app for iOS when you add to homescreen -->
+</head>
+<body>
+  <div class="mobile-mask">
+    <div class="mobile-mask__wrapper">
+      <div class="mobile-mask__screen">
+        <div js-intial-load-overlay="-" class="initial-load-overlay">
+          <div class="initial-load-overlay__inner">
+            <div class="initial-load-overlay__spinner">
+              <div class="initialload-overlay__logo">
+                <div class="brand-logo">
+                  <div class="app-logo">
+                    <div class="app-logo__icon"></div>
+                    <div class="welcome-h__text">Signpost</div>
+                  </div>
+                </div>
+              </div>
+              <div animation-spin="true" class="generic-spinner is-larger"></div>
+            </div>
+          </div>
+        </div>
+        <div class="mobile-mask__body">
+          <div subpage-id="today" class="mobile-subpage">
+            <div class="generic-mobile-app-layout">
+              <div touch-action="none" class="generic-mobile-app-layout__top-fixed is-with-notch-space is-hidden-for-future">
+                <div touch-action="none" class="generic-app-bar">
+                  <div class="generic-app-bar__inner">
+                    <div class="generic-app-bar__actions is-hidden">
+                      <div class="generic-app-bar-button">
+                        <div class="generic-app-bar-button__icon"></div>
+                      </div>
+                    </div>
+                    <div class="generic-app-bar__texts is-left-aligned">
+                      <div class="generic-app-bar__big-heading">Dzisiaj</div>
+                    </div>
+                    <div class="generic-app-bar__actions">
+                      <div js-go-tu-subpage="calendar" class="generic-app-bar-button">
+                        <div class="generic-app-bar-button__icon"></div>
+                      </div>
+                      <div js-go-to-subpage="add-something" class="generic-app-bar-button">
+                        <div class="generic-app-bar-button__icon"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div js-scroll-shadow="mobile-app-bar" class="generic-mobile-app-layout__middle-scrollable">
+                <div class="generic-mobile-app-layout__middle-section">
+                  <div add-class-on-load="is-sticky" js-scroll-shadow-header="mobile-app-bar" class="generic-app-bar is-with-notch-spacing is-transparent is-sticky">
+                    <div class="generic-app-bar__inner">
+                      <div class="generic-app-bar__actions is-hidden">
+                        <div class="generic-app-bar-button">
+                          <div class="generic-app-bar-button__icon"></div>
+                        </div>
+                      </div>
+                      <div class="generic-app-bar__texts is-left-aligned">
+                        <div class="generic-app-bar__big-heading">Today</div>
+                      </div>
+                      <div class="generic-app-bar__actions">
+                        <div js-go-tu-subpage="calendar" class="generic-app-bar-button is-hidden-for-future">
+                          <div class="generic-app-bar-button__icon"></div>
+                        </div>
+                        <div js-go-to-subpage="add-something" class="generic-app-bar-button is-hidden-for-future">
+                          <div class="generic-app-bar-button__icon"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="generic-app-cards-holder">
+                    <div class="generic-stack">
+                      <div class="generic-stack__list is-vertical">
+                        <div class="generic-stack__item">
+                          <div class="generic-card is-hero-with-image-background-with-filter">
+                            <div class="generic-card__hero-background-with-filter">
+                              <div class="svg-gradient-background"></div>
+                            </div>
+                            <div class="generic-card-area is-hero-on-image">
+                              <div class="generic-card__hero-background-text-dimmer is-hidden"></div>
+                              <div class="generic-card__hero-background-text-dimmer is-darker is-hidden"></div>
+                              <div class="generic-card-area__header">
+                                <div class="generic-card-area__header-left is-hero">
+                                  <div class="generic-card-area__tagline-holder is-on-dark">
+                                    <div class="generic-tagline">Tuesday, October 12</div>
+                                  </div>
+                                  <div class="generic-card-area__title is-hero">Good morning! Hania is 1 week and 2 days old</div>
+                                  <div class="generic-p">This week, focus on finding your way through the maze of official papers as quickly as possible</div>
+                                </div>
+                                <div class="generic-card-area__header-right is-hidden"></div>
+                              </div>
+                              <div class="generic-card-area__body is-hidden"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="generic-stack__item">
+                          <div js-go-to-subpage="read-letter" class="generic-card">
+                            <div class="new-mail-baner">
+                              <div class="new-mail-baner__icon">
+                                <div class="generic-icon-any-font-character is-new-mail"></div>
+                                <div class="new-mail-baner__icon-badge">
+                                  <div class="new-mail-baner__icon-shape"></div>
+                                  <div class="new-mail-baner__icon-number"></div>
+                                </div>
+                              </div>
+                              <div class="new-mail-baner__text">
+                                <div class="new-mail-baner__h">
+                                  <div class="generic-heading__h3">Read a letter from your child</div>
+                                </div>
+                                <div class="new-mail-baner__p">Przeczytaj list od swojego dziecka</div>
+                                <div class="generic-card-area__chevron-holder">
+                                  <div class="generic-icon-any-font-character is-20"></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="generic-stack__item">
+                          <div js-go-to-subpage="article-1" class="generic-card is-clickable">
+                            <div class="generic-card-pic">
+                              <div class="generic-card-pic__proportion-maker"><img src="../images/Empty-1280x720-rectangle.png" loading="lazy" srcset="../images/Empty-1280x720-rectangle-p-500.png 500w, ../images/Empty-1280x720-rectangle.png 1280w" alt="" sizes="(max-width: 479px) 89vw, (max-width: 767px) 93vw, 320px" class="generic-card-pic__proportion-maker-img"></div><img src="../images/wczesniak-w-domu.jpeg" loading="lazy" alt="" class="generic-card-pic__cover">
+                            </div>
+                            <div class="generic-card-area">
+                              <div class="generic-card-area__header is-with-chevron is-last">
+                                <div class="generic-card-area__header-left">
+                                  <div class="generic-card-area__tagline-holder">
+                                    <div class="generic-tagline">Glossary</div>
+                                  </div>
+                                  <div class="generic-card-area__title">What is an Incubator and what is it used for?</div>
+                                </div>
+                                <div class="generic-card-area__header-right is-hidden"></div>
+                                <div class="generic-card-area__chevron-holder">
+                                  <div class="generic-icon-any-font-character is-20"></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="generic-stack__item">
+                          <div js-go-to-subpage="article-1" class="generic-card is-clickable">
+                            <div class="generic-card-pic">
+                              <div class="generic-card-pic__proportion-maker"><img src="../images/Empty-1280x720-rectangle.png" loading="lazy" srcset="../images/Empty-1280x720-rectangle-p-500.png 500w, ../images/Empty-1280x720-rectangle.png 1280w" alt="" sizes="(max-width: 479px) 89vw, (max-width: 767px) 93vw, 320px" class="generic-card-pic__proportion-maker-img"></div><img src="../images/istockphoto-1063148786-612x612.jpg" loading="lazy" alt="" class="generic-card-pic__cover">
+                            </div>
+                            <div class="generic-card-area">
+                              <div class="generic-card-area__header is-last is-with-chevron">
+                                <div class="generic-card-area__header-left">
+                                  <div class="generic-card-area__tagline-holder is-on-white">
+                                    <div class="generic-tagline">Care </div>
+                                  </div>
+                                  <div class="generic-card-area__title">First of all, touch</div>
+                                </div>
+                                <div class="generic-card-area__header-right is-hidden"></div>
+                                <div class="generic-card-area__chevron-holder">
+                                  <div class="generic-icon-any-font-character is-20"></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="generic-stack__item">
+                          <div class="generic-card is-hero-with-image-background-with-filter">
+                            <div class="generic-card-area is-in-colorized-hero">
+                              <div class="generic-card-area__header">
+                                <div class="generic-card-area__header-left is-hero">
+                                  <div class="generic-card-area__tagline-holder">
+                                    <div class="generic-tagline">Wtorek, 12 Października</div>
+                                  </div>
+                                  <div class="generic-card-area__title is-hero">Hurra! Hania ma już miesiąc!</div>
+                                  <div class="generic-p">This week, focus on finding your way through the maze of official papers as quickly as possible</div>
+                                </div>
+                                <div class="generic-card-area__header-right is-hidden"></div>
+                              </div>
+                              <div class="generic-card-area__body is-hidden"></div>
+                            </div>
+                            <div class="generic-card__hero-background"><img src="../images/robert-linder--t7htjel0qU-unsplash.jpg" loading="lazy" alt="" class="generic-card__hero-background-img"><img src="../images/susan-q-yin-Ctaj_HCqW84-unsplash.jpg" loading="lazy" alt="" class="generic-card__hero-background-img"><img src="../images/istockphoto-664300136-612x612.jpg" loading="lazy" alt="" class="generic-card__hero-background-img"><img src="../images/istockphoto-108688371-612x612.jpg" loading="lazy" alt="" class="generic-card__hero-background-img"></div>
+                            <div class="generic-card__image-colorizer is-color-2"></div>
+                          </div>
+                        </div>
+                        <div class="generic-stack__item">
+                          <div class="generic-card is-hero-with-image-background-with-filter">
+                            <div class="generic-card-area is-in-colorized-hero">
+                              <div class="generic-card-area__header">
+                                <div class="generic-card-area__header-left">
+                                  <div class="generic-card-area__tagline-holder is-on-white">
+                                    <div class="generic-tagline">Wtorek, 12 Października</div>
+                                  </div>
+                                  <div class="generic-card-area__title is-hero">Dzień dobry! Hania ma już 1 tydzień i 2 dni</div>
+                                  <div class="generic-p is-lighter">This week, focus on finding your way through the maze of official papers as quickly as possible</div>
+                                </div>
+                                <div class="generic-card-area__header-right is-hidden"></div>
+                              </div>
+                              <div class="generic-card-area__body is-hidden"></div>
+                            </div>
+                            <div class="generic-card__hero-background"><img src="../images/istockphoto-1355074802-612x612.jpg" loading="lazy" alt="" class="generic-card__hero-background-img"><img src="../images/jonny-gios-gsEjI1Vrdzo-unsplash.jpg" loading="lazy" srcset="../images/jonny-gios-gsEjI1Vrdzo-unsplash-p-500.jpeg 500w, ../images/jonny-gios-gsEjI1Vrdzo-unsplash.jpg 640w" alt="" sizes="(max-width: 479px) 89vw, (max-width: 767px) 93vw, 320px" class="generic-card__hero-background-img"><img src="../images/istockphoto-1355074802-612x612.jpg" loading="lazy" alt="" class="generic-card__hero-background-img"><img src="../images/istockphoto-1319631129-612x612.jpg" loading="lazy" alt="" class="generic-card__hero-background-img"></div>
+                            <div class="generic-card__image-colorizer is-color-4"></div>
+                            <div class="generic-card__image-inside is-hidden-for-future"><img src="../images/istockphoto-1355074802-612x612.jpg" loading="lazy" alt=""></div>
+                          </div>
+                        </div>
+                        <div class="generic-stack__item">
+                          <div class="generic-card is-hero-with-image-background-with-filter">
+                            <div class="generic-card__image-inside is-hidden-for-future"><img src="../images/istockphoto-1355074802-612x612.jpg" loading="lazy" alt=""></div>
+                            <div class="generic-card-area">
+                              <div class="generic-card-area__header">
+                                <div class="generic-card-area__header-left">
+                                  <div class="generic-card-area__tagline-holder is-on-white">
+                                    <div class="generic-tagline">Tuesday, October 12</div>
+                                  </div>
+                                  <div class="generic-card-area__title is-hero">Nice of you to stop by! Hania is already 12 weeks old</div>
+                                  <div class="generic-p">This week, focus on finding your way through the maze of official papers as quickly as possible</div>
+                                </div>
+                                <div class="generic-card-area__header-right is-hidden"></div>
+                              </div>
+                              <div class="generic-card-area__body is-hidden"></div>
+                            </div>
+                            <div class="generic-card__hero-background"><img src="../images/istockphoto-1355074802-612x612.jpg" loading="lazy" alt="" class="generic-card__hero-background-img"><img src="../images/istockphoto-1355074802-612x612.jpg" loading="lazy" alt="" class="generic-card__hero-background-img"><img src="../images/jonny-gios-gsEjI1Vrdzo-unsplash.jpg" loading="lazy" srcset="../images/jonny-gios-gsEjI1Vrdzo-unsplash-p-500.jpeg 500w, ../images/jonny-gios-gsEjI1Vrdzo-unsplash.jpg 640w" alt="" sizes="(max-width: 479px) 89vw, (max-width: 767px) 93vw, 320px" class="generic-card__hero-background-img"></div>
+                            <div class="generic-card__image-colorizer is-color-3"></div>
+                          </div>
+                        </div>
+                        <div js-todo-item-state="not-done" js-todo-item="karte-za-zyciem" class="generic-stack__item">
+                          <div task-id="1" class="generic-card">
+                            <div class="generic-card-area">
+                              <div class="generic-card-area__header">
+                                <div class="generic-card-area__header-left">
+                                  <div class="generic-card-area__tagline-holder is-on-white">
+                                    <div class="generic-tagline">To do</div>
+                                  </div>
+                                  <div class="generic-card-area__header-with-icon">
+                                    <div js-toggle-task-state="-" class="card-area-icon-near-header">
+                                      <div class="generic-icon-any-font-character is-24"></div>
+                                    </div>
+                                    <div class="todo-task-header">Get a pro-life card</div>
+                                  </div>
+                                </div>
+                                <div class="generic-card-area__header-right is-more-top-right is-hidden">
+                                  <div class="generic-action-icons-row">
+                                    <div class="generic-action-icons-row__item-holder is-lighter">
+                                      <div class="generic-small-action-button"></div>
+                                    </div>
+                                    <div class="generic-action-icons-row__item-holder is-hidden-for-future">
+                                      <div js-table-action="ellipsis" simply-dropdown-menu="&quot;&quot;" noselect="true" class="simply-dropdown-menu">
+                                        <div simply-dropdown-menu-button="&quot;&quot;" class="generic-action-icons-row__item">
+                                          <div class="generic-small-action-button"></div>
+                                        </div>
+                                        <div simply-dropdown-menu-list="&quot;&quot;" class="generic-select-dropdown-menu__list">
+                                          <div class="simply-dropdown-menu__list-inner">
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Oznacz jako wykonane</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Przeczytaj artykuł</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Edytuj</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Usuń</div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div js-todo-item-state="done" js-todo-item="karte-za-zyciem" class="generic-stack__item">
+                          <div task-id="1" class="generic-card is-clickable">
+                            <div class="generic-card-area">
+                              <div class="generic-card-area__header">
+                                <div class="generic-card-area__header-left">
+                                  <div class="generic-card-area__tagline-holder is-on-white">
+                                    <div class="generic-tagline">To do</div>
+                                  </div>
+                                  <div class="generic-card-area__header-with-icon">
+                                    <div js-toggle-task-state="-" class="card-area-icon-near-header is-finished">
+                                      <div class="generic-icon-any-font-character is-24"></div>
+                                    </div>
+                                    <div class="todo-task-header is-finished">Get a pro-life card</div>
+                                  </div>
+                                </div>
+                                <div class="generic-card-area__header-right is-more-top-right is-hidden-for-future">
+                                  <div class="generic-action-icons-row">
+                                    <div class="generic-action-icons-row__item-holder is-lighter">
+                                      <div class="generic-small-action-button"></div>
+                                    </div>
+                                    <div class="generic-action-icons-row__item-holder is-hidden-for-future">
+                                      <div js-table-action="ellipsis" simply-dropdown-menu="&quot;&quot;" noselect="true" class="simply-dropdown-menu">
+                                        <div simply-dropdown-menu-button="&quot;&quot;" class="generic-action-icons-row__item">
+                                          <div class="generic-small-action-button"></div>
+                                        </div>
+                                        <div simply-dropdown-menu-list="&quot;&quot;" class="generic-select-dropdown-menu__list">
+                                          <div class="simply-dropdown-menu__list-inner">
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Oznacz jako wykonane</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Przeczytaj artykuł</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Edytuj</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Usuń</div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div js-control-question="cardiologist-appointment" class="generic-stack__item is-hidden-for-future">
+                          <div class="generic-card">
+                            <div class="generic-card-area">
+                              <div class="generic-card-area__header">
+                                <div class="generic-card-area__header-left">
+                                  <div class="generic-card-area__tagline-holder">
+                                    <div class="generic-tagline">Pytanie kontrolne</div>
+                                  </div>
+                                  <div class="generic-card-area__header-with-icon">
+                                    <div class="card-area-icon-near-header">
+                                      <div class="generic-icon-any-font-character is-24"></div>
+                                    </div>
+                                    <div class="todo-task-header">Czy Hania jest już umówiona do kardiologa?</div>
+                                  </div>
+                                </div>
+                                <div class="generic-card-area__header-right is-more-top-right is-hidden">
+                                  <div class="generic-action-icons-row">
+                                    <div class="generic-action-icons-row__item-holder is-lighter">
+                                      <div class="generic-small-action-button"></div>
+                                    </div>
+                                    <div class="generic-action-icons-row__item-holder is-hidden-for-future">
+                                      <div js-table-action="ellipsis" simply-dropdown-menu="&quot;&quot;" noselect="true" class="simply-dropdown-menu">
+                                        <div simply-dropdown-menu-button="&quot;&quot;" class="generic-action-icons-row__item">
+                                          <div class="generic-small-action-button"></div>
+                                        </div>
+                                        <div simply-dropdown-menu-list="&quot;&quot;" class="generic-select-dropdown-menu__list">
+                                          <div class="simply-dropdown-menu__list-inner">
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Oznacz jako wykonane</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Przeczytaj artykuł</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Edytuj</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Usuń</div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="generic-card-area__body">
+                                <div class="generic-buttons-row">
+                                  <div class="generic-buttons-row__items is-full-width-horizontal">
+                                    <div class="generic-buttons-row__item is-full-width">
+                                      <div js-click-mark-question="no" class="generic-button is-secondary">
+                                        <div class="generic-button__inner">
+                                          <div simply-button-text-near-spinner="&quot;&quot;" class="generic-button__text-wrapper">
+                                            <div class="generic-button__text">Nie</div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="generic-buttons-row__item is-full-width">
+                                      <div js-click-mark-question="yes" simply-button-with-spinner="suite-details-saving-request-status" simply-show-spinner-when-param-equals="requesting" class="generic-button is-with-spinner">
+                                        <div class="generic-button__inner w-clearfix">
+                                          <div simply-button-text-near-spinner="&quot;&quot;" class="generic-button__text-wrapper is-with-spinner-shown">
+                                            <div class="generic-button__text">Tak</div>
+                                          </div>
+                                          <div animation-spin="true" simply-button-spinner-icon="true" class="bem-button__spinner"></div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div js-todo-item-state="undone" js-todo-item="cardiologist-appointment" class="generic-stack__item">
+                          <div class="generic-card is-clickable">
+                            <div class="generic-card-area">
+                              <div class="generic-card-area__header">
+                                <div class="generic-card-area__header-left">
+                                  <div class="generic-card-area__tagline-holder is-on-white">
+                                    <div class="generic-tagline">To do</div>
+                                  </div>
+                                  <div class="generic-card-area__header-with-icon">
+                                    <div js-toggle-task-state="-" class="card-area-icon-near-header">
+                                      <div class="generic-icon-any-font-character is-24"></div>
+                                    </div>
+                                    <div class="todo-task-header">Make an appointment with a cardiologist</div>
+                                  </div>
+                                </div>
+                                <div class="generic-card-area__header-right is-more-top-right is-hidden-for-future">
+                                  <div class="generic-action-icons-row">
+                                    <div class="generic-action-icons-row__item-holder is-lighter">
+                                      <div class="generic-small-action-button"></div>
+                                    </div>
+                                    <div class="generic-action-icons-row__item-holder is-hidden-for-future">
+                                      <div js-table-action="ellipsis" simply-dropdown-menu="&quot;&quot;" noselect="true" class="simply-dropdown-menu">
+                                        <div simply-dropdown-menu-button="&quot;&quot;" class="generic-action-icons-row__item">
+                                          <div class="generic-small-action-button"></div>
+                                        </div>
+                                        <div simply-dropdown-menu-list="&quot;&quot;" class="generic-select-dropdown-menu__list">
+                                          <div class="simply-dropdown-menu__list-inner">
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Oznacz jako wykonane</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Przeczytaj artykuł</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Edytuj</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Usuń</div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div js-todo-item-state="done" js-todo-item="install-app" class="generic-stack__item">
+                          <div class="generic-card is-clickable">
+                            <div class="generic-card-area">
+                              <div class="generic-card-area__header">
+                                <div class="generic-card-area__header-left">
+                                  <div class="generic-card-area__tagline-holder is-on-white">
+                                    <div class="generic-tagline">To do</div>
+                                  </div>
+                                  <div class="generic-card-area__header-with-icon">
+                                    <div js-toggle-task-state="-" class="card-area-icon-near-header is-finished">
+                                      <div class="generic-icon-any-font-character is-24"></div>
+                                    </div>
+                                    <div class="todo-task-header is-finished">Install the application &quot;Signpost&quot;</div>
+                                  </div>
+                                </div>
+                                <div class="generic-card-area__header-right is-more-top-right is-hidden-for-future">
+                                  <div class="generic-action-icons-row">
+                                    <div class="generic-action-icons-row__item-holder is-lighter">
+                                      <div class="generic-small-action-button"></div>
+                                    </div>
+                                    <div class="generic-action-icons-row__item-holder is-hidden-for-future">
+                                      <div js-table-action="ellipsis" simply-dropdown-menu="&quot;&quot;" noselect="true" class="simply-dropdown-menu">
+                                        <div simply-dropdown-menu-button="&quot;&quot;" class="generic-action-icons-row__item">
+                                          <div class="generic-small-action-button"></div>
+                                        </div>
+                                        <div simply-dropdown-menu-list="&quot;&quot;" class="generic-select-dropdown-menu__list">
+                                          <div class="simply-dropdown-menu__list-inner">
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Oznacz jako wykonane</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Przeczytaj artykuł</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Edytuj</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Usuń</div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div js-todo-item-state="not-done" js-todo-item="install-app" class="generic-stack__item">
+                          <div class="generic-card is-clickable">
+                            <div class="generic-card-area">
+                              <div class="generic-card-area__header">
+                                <div class="generic-card-area__header-left">
+                                  <div class="generic-card-area__tagline-holder is-on-white">
+                                    <div class="generic-tagline">To do</div>
+                                  </div>
+                                  <div class="generic-card-area__header-with-icon">
+                                    <div js-toggle-task-state="-" class="card-area-icon-near-header">
+                                      <div class="generic-icon-any-font-character is-24"></div>
+                                    </div>
+                                    <div class="todo-task-header">Install the application &quot;Signpost&quot;</div>
+                                  </div>
+                                </div>
+                                <div class="generic-card-area__header-right is-more-top-right is-hidden-for-future">
+                                  <div class="generic-action-icons-row">
+                                    <div class="generic-action-icons-row__item-holder is-lighter">
+                                      <div class="generic-small-action-button"></div>
+                                    </div>
+                                    <div class="generic-action-icons-row__item-holder is-hidden-for-future">
+                                      <div js-table-action="ellipsis" simply-dropdown-menu="&quot;&quot;" noselect="true" class="simply-dropdown-menu">
+                                        <div simply-dropdown-menu-button="&quot;&quot;" class="generic-action-icons-row__item">
+                                          <div class="generic-small-action-button"></div>
+                                        </div>
+                                        <div simply-dropdown-menu-list="&quot;&quot;" class="generic-select-dropdown-menu__list">
+                                          <div class="simply-dropdown-menu__list-inner">
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Oznacz jako wykonane</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Przeczytaj artykuł</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Edytuj</div>
+                                            </div>
+                                            <div js-go-to-subpage="organization-settings" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item">
+                                              <div class="simply-dropdown-menu__list-icon">
+                                                <div class="simply-dropdown-menu__list-icon-pic"></div>
+                                              </div>
+                                              <div class="simply-dropdown-menu__list-label">Usuń</div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="generic-mobile-app-layout__bottom-fixed is-with-safe-space">
+                <div noselect="true" touch-action="none" class="generic-bottom-nav">
+                  <div class="generic-bottom-nav__list">
+                    <div js-nav="today" js-go-to-subpage="today" class="generic-bottom-nav__item is-current">
+                      <div class="generic-bottom-nav__icon">
+                        <div class="generic-icon-any-font-character is-20"></div>
+                      </div>
+                      <div class="generic-bottom-nav__text">Today</div>
+                    </div>
+                    <div js-nav="przeglad" js-go-to-subpage="przeglad" class="generic-bottom-nav__item">
+                      <div class="generic-bottom-nav__icon">
+                        <div class="generic-icon-any-font-character is-20"></div>
+                      </div>
+                      <div class="generic-bottom-nav__text">Browse</div>
+                    </div>
+                    <div js-nav="search" js-go-to-subpage="search" class="generic-bottom-nav__item is-hidden-for-future">
+                      <div class="generic-bottom-nav__icon">
+                        <div class="generic-icon-any-font-character is-20"></div>
+                      </div>
+                      <div class="generic-bottom-nav__text">Szukaj</div>
+                    </div>
+                    <div js-nav="more" js-go-to-subpage="more" class="generic-bottom-nav__item">
+                      <div class="generic-bottom-nav__icon">
+                        <div class="generic-icon-any-font-character is-20"></div>
+                      </div>
+                      <div class="generic-bottom-nav__text">More</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flashing-notifications-wrapper">
+            <div js-selector="flashing-notification__neutral" class="flashing-notification is-transparent is-hidden">
+              <div class="flashing-notification__padding-wrapper">
+                <div class="flashing-notification__box">
+                  <div class="flashing-notification__box-inner">
+                    <div class="flashing-notification__icon-on-right-holder"></div>
+                    <div class="flashing-notification__icon-holder">
+                      <div class="flashing-notification__icon"></div>
+                    </div>
+                    <div js-selector="flashing-notification-text" class="flashing-notification__text">Reconnecting...<span class="flashing-notification__text-link"></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div js-selector="flashing-notification__success" class="flashing-notification is-transparent is-hidden">
+              <div class="flashing-notification__padding-wrapper">
+                <div class="flashing-notification__box is-green-success">
+                  <div class="flashing-notification__box-inner">
+                    <div class="flashing-notification__icon-on-right-holder"></div>
+                    <div class="flashing-notification__icon-holder">
+                      <div class="flashing-notification__icon is-check"></div>
+                    </div>
+                    <div js-selector="flashing-notification-text" class="flashing-notification__text">Test finished <span class="flashing-notification__text-link">#567</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div js-selector="flashing-notification__error" class="flashing-notification is-transparent is-hidden">
+              <div class="flashing-notification__padding-wrapper">
+                <div class="flashing-notification__box is-red-error">
+                  <div class="flashing-notification__box-inner">
+                    <div class="flashing-notification__icon-on-right-holder">
+                      <div flashing-notifications__action-close-notification="true" class="flashing-notification__icon is-close-icon"></div>
+                    </div>
+                    <div class="flashing-notification__icon-holder">
+                      <div class="flashing-notification__icon is-error"></div>
+                    </div>
+                    <div js-selector="flashing-notification-text" class="flashing-notification__text">Test failed  <span class="flashing-notification__text-link">#567</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div pointer-events="none" class="mobile-mask__iphone-mask"></div>
+    </div>
+  </div>
+  <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=6330922ce4f9006ed6c0131b" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="../js/webflow.js" type="text/javascript"></script>
+  <script src="https://simplyframework.bitbucket.io/dist/js/simply-framework.js"></script>
+  <script src="https://protodrogowskaz.bitbucket.io/build/js/scripts-bundle.js"></script>
+</body>
+</html>

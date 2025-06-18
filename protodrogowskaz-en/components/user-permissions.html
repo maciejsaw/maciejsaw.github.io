@@ -1,0 +1,291 @@
+<!DOCTYPE html><!--  This site was created in Webflow. https://webflow.com  --><!--  Last Published: Mon Feb 24 2025 09:49:39 GMT+0000 (Coordinated Universal Time)  -->
+<html data-wf-page="6330922ce4f90030bcc0142f" data-wf-site="6330922ce4f9006ed6c0131b">
+<head>
+  <meta charset="utf-8">
+  <title>user-permissions</title>
+  <meta content="user-permissions" property="og:title">
+  <meta content="user-permissions" property="twitter:title">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta content="Webflow" name="generator">
+  <link href="../css/normalize.css" rel="stylesheet" type="text/css">
+  <link href="../css/webflow.css" rel="stylesheet" type="text/css">
+  <link href="../css/protodrogowskaz-hifi-mvp-en.webflow.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+  <script type="text/javascript">WebFont.load({  google: {    families: ["Inconsolata:400,700","Balsamiq Sans:regular,700:latin,latin-ext","Poppins:100,100italic,200,200italic,300,300italic,regular,italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic:latin,latin-ext","Nunito Sans:200,200italic,300,300italic,regular,italic,600,600italic,700,700italic,800,800italic,900,900italic:latin,latin-ext","Inter:regular,500,600,700,800,900:greek-ext,latin","Noto Sans:regular,700:latin,latin-ext","Nunito:regular,500,600,700,800,900,italic:latin,latin-ext","Work Sans:regular,500,600,700,800,900,italic:latin,latin-ext","Roboto:300,regular,italic,500,700,900:latin,latin-ext"]  }});</script>
+  <script src="https://use.typekit.net/vbo6num.js" type="text/javascript"></script>
+  <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+  <script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script>
+  <link href="../images/favicon.png" rel="shortcut icon" type="image/x-icon">
+  <link href="../images/webclip.png" rel="apple-touch-icon">
+  <style>
+.initial-load-overlay {
+  display: block;
+}
+[animation-spin="true"] {
+  -webkit-animation-name: spin;
+  -webkit-animation-duration: 2000ms;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+  -moz-animation-name: spin;
+  -moz-animation-duration: 2000;
+  -moz-animation-iteration-count: infinite;
+  -moz-animation-timing-function: linear;
+  -ms-animation-name: spin;
+  -ms-animation-duration: 2000ms;
+  -ms-animation-iteration-count: infinite;
+  -ms-animation-timing-function: linear;
+  animation-name: spin;
+  animation-duration: 2000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+[is-hidden-on-load] {
+  display: none;
+}
+</style>
+  <link rel="stylesheet" type="text/css" href="https://simplyframework.bitbucket.io/build/css/styles-bundle.css">
+  <link rel="stylesheet" type="text/css" href="https://protodrogowskaz.bitbucket.io/build/css/styles-bundle.css">
+  <!-- Fullscreen app for iOS when you add to homescreen -->
+  <link rel="manifest" href="https://protodrogowskaz.bitbucket.io/src/simply-app/js/general/manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Prototype App">
+  <meta name="apple-mobile-web-app-title" content="Prototype App">
+  <meta name="msapplication-starturl" content="https://protodrogowskaz.webflow.io">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="icon" type="image/png" sizes="256x256" href="https://assets.website-files.com/604f8bf1ab57f5bdab38e39f/6058693bf9e03e563d771ea6_app-clip-generic-mobile.png">
+  <link rel="apple-touch-icon" type="image/png" sizes="256x256" href="https://assets.website-files.com/604f8bf1ab57f5bdab38e39f/6058693bf9e03e563d771ea6_app-clip-generic-mobile.png">
+  <!-- Fullscreen app for iOS when you add to homescreen -->
+</head>
+<body>
+  <div class="webflow-loadable-component-preview">
+    <div class="simply-form-block w-form">
+      <form id="email-form-4" name="email-form-4" data-name="Email Form 4" method="get" class="simply-form-block__inner" data-wf-page-id="6330922ce4f90030bcc0142f" data-wf-element-id="be82ac31-0af0-7dfb-7747-3271c8b3e9f1">
+        <div simply-tab-content="subscription" simply-tabs="account-settings" class="subpage__generic-content">
+          <div js-component-to-load="-" class="settings-content">
+            <div class="user-permissions-wrapper">
+              <div class="user-permissions__top-row">
+                <div class="user-permissions__top-row-left">
+                  <div class="settings-content__intro-text is-user-permissions-intro">Invite teammates to collaborate on all your projects. projects. Below you can see who already has access.</div>
+                </div>
+                <div class="user-permissions__top-row-right">
+                  <div action-show-modal="invite-new-user" class="generic-button">
+                    <div class="generic-button__inner">
+                      <div simply-button-text-near-spinner="&quot;&quot;" class="generic-button__text-wrapper">
+                        <div class="bem-button__icon-holder is-on-left">
+                          <div class="generic-button__icon is-image is-plus-circle"></div>
+                        </div>
+                        <div class="generic-button__text is-with-icon-on-left">Invite new user</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div js-approaching-users-limit="-" class="user-permissions__info-bar-holder">
+                <div class="generic-small-info-bar is-hidden">
+                  <div class="generic-small-info-bar__icon"></div>
+                  <div class="generic-small-info-bar__text">You have reached the limit of users. <a href="#">Ugrade to add more</a>
+                  </div>
+                </div>
+                <div class="generic-small-info-bar">
+                  <div class="generic-small-info-bar__icon">
+                    <div class="generic-icon-info is-24"></div>
+                  </div>
+                  <div class="generic-small-info-bar__text">You&#x27;re approaching the limit of users - only 1 left. <a href="#">Ugrade to add more</a>
+                  </div>
+                </div>
+              </div>
+              <div class="user-permissions-table">
+                <div class="table-list is-user-permissions-table">
+                  <div class="table-list__header">
+                    <div js-table-list-header="&quot;&quot;" class="table-list__row is-table-header">
+                      <div class="table-list__cell">
+                        <div class="table-list__header-label is-clickable">
+                          <div class="table-list__header-text">E-MAIL</div>
+                          <div js-table-list-sort-icon="&quot;&quot;" class="table-list__header-sort-icon is-descending"></div>
+                        </div>
+                      </div>
+                      <div class="table-list__cell is-hidden-for-future">
+                        <div class="table-list__header-label is-clickable">
+                          <div class="table-list__header-text">ROLE</div>
+                          <div js-table-list-sort-icon="&quot;&quot;" class="table-list__header-sort-icon is-ascending"></div>
+                        </div>
+                      </div>
+                      <div class="table-list__cell is-for-actions"></div>
+                    </div>
+                  </div>
+                  <div class="table-list__rows is-user-permissions-table">
+                    <div class="table-list__row">
+                      <div class="table-list__cell">
+                        <div class="user-cell">
+                          <div class="user-cell__icon">
+                            <div class="generic-user-avatar">
+                              <div class="generic-user-avatar__text">J</div><img src="../images/transparent_1transparent.png" loading="lazy" alt="" class="generic-user-avatar__pic">
+                            </div>
+                          </div>
+                          <div class="user-cell__texts">
+                            <div class="generic-table__text">jan.tester@gmail.com (You)</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="table-list__cell is-hidden-for-future">
+                        <div class="table-list__cell-label">
+                          <div class="generic-table__text is-lighter">Admin</div>
+                        </div>
+                      </div>
+                      <div class="table-list__cell is-for-actions">
+                        <div stop-propagation="true" js-table-list-actions="&quot;&quot;" class="generic-action-icons-row">
+                          <div class="generic-action-icons-row__item-holder"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div js-invited-user-row="-" class="table-list__row">
+                      <div class="table-list__cell">
+                        <div class="user-cell">
+                          <div class="user-cell__icon">
+                            <div class="generic-user-avatar">
+                              <div class="generic-user-avatar__text">MS</div><img src="../images/Screenshot-2021-03-17-at-23.37.15.jpg" loading="lazy" alt="" class="generic-user-avatar__pic">
+                            </div>
+                          </div>
+                          <div class="user-cell__texts">
+                            <div class="generic-table__text">john.smith@tmail.com</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="table-list__cell is-hidden-for-future">
+                        <div class="table-list__cell-label">
+                          <div class="generic-table__text is-lighter">Editor</div>
+                        </div>
+                      </div>
+                      <div class="table-list__cell is-for-actions">
+                        <div stop-propagation="true" class="generic-action-icons-row">
+                          <div class="generic-action-icons-row__item-holder">
+                            <div noselect="true" simply-dropdown-menu="&quot;&quot;" class="table-list-actions__dropdown-menu">
+                              <div simply-dropdown-menu-button="&quot;&quot;" class="generic-action-icons-row__item"></div>
+                              <div simply-dropdown-menu-list="&quot;&quot;" class="generic-select-dropdown-menu__list is-table-list-actions-menu is-hidden">
+                                <div js-action-make-owner="&quot;&quot;" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item is-table-list-action is-hidden-for-future">
+                                  <div class="simply-dropdown-menu__list-icon">
+                                    <div class="simply-dropdown-menu__list-icon-pic is-make-owner"></div>
+                                  </div>
+                                  <div class="simply-dropdown-menu__list-label">Change to &quot;Admin&quot;</div>
+                                </div>
+                                <div js-action-revoke-access="&quot;&quot;" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item is-table-list-action is-delete-all">
+                                  <div class="simply-dropdown-menu__list-icon">
+                                    <div class="simply-dropdown-menu__list-icon-pic is-delete-all"></div>
+                                  </div>
+                                  <div class="simply-dropdown-menu__list-label">Remove from organization</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="table-list__row">
+                      <div class="table-list__cell">
+                        <div class="user-cell">
+                          <div class="user-cell__icon">
+                            <div class="generic-user-avatar">
+                              <div class="generic-user-avatar__text">M</div>
+                            </div>
+                          </div>
+                          <div class="user-cell__texts">
+                            <div class="generic-table__text">maciej@demogmail.com</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="table-list__cell is-hidden-for-future">
+                        <div class="table-list__cell-label">
+                          <div class="generic-table__text is-lighter">Editor</div>
+                        </div>
+                      </div>
+                      <div class="table-list__cell is-for-actions">
+                        <div stop-propagation="true" class="generic-action-icons-row">
+                          <div class="generic-action-icons-row__item-holder">
+                            <div noselect="true" simply-dropdown-menu="&quot;&quot;" class="table-list-actions__dropdown-menu">
+                              <div simply-dropdown-menu-button="&quot;&quot;" class="generic-action-icons-row__item"></div>
+                              <div simply-dropdown-menu-list="&quot;&quot;" class="generic-select-dropdown-menu__list is-table-list-actions-menu is-hidden">
+                                <div js-action-make-owner="&quot;&quot;" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item is-table-list-action is-hidden-for-future">
+                                  <div class="simply-dropdown-menu__list-icon">
+                                    <div class="simply-dropdown-menu__list-icon-pic is-make-owner"></div>
+                                  </div>
+                                  <div class="simply-dropdown-menu__list-label">Change to &quot;Admin&quot;</div>
+                                </div>
+                                <div js-action-revoke-access="&quot;&quot;" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item is-table-list-action is-delete-all">
+                                  <div class="simply-dropdown-menu__list-icon">
+                                    <div class="simply-dropdown-menu__list-icon-pic is-delete-all"></div>
+                                  </div>
+                                  <div class="simply-dropdown-menu__list-label">Remove from organization</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="table-list__row">
+                      <div class="table-list__cell">
+                        <div class="user-cell">
+                          <div class="user-cell__icon">
+                            <div class="generic-user-avatar">
+                              <div class="generic-user-avatar__text">S</div>
+                            </div>
+                          </div>
+                          <div class="user-cell__texts">
+                            <div class="generic-table__text">someadmin@test.pl</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="table-list__cell is-hidden-for-future">
+                        <div class="table-list__cell-label">
+                          <div class="generic-table__text is-lighter">Admin</div>
+                        </div>
+                      </div>
+                      <div class="table-list__cell is-for-actions">
+                        <div stop-propagation="true" class="generic-action-icons-row">
+                          <div class="generic-action-icons-row__item-holder">
+                            <div noselect="true" simply-dropdown-menu="&quot;&quot;" class="table-list-actions__dropdown-menu">
+                              <div simply-dropdown-menu-button="&quot;&quot;" class="generic-action-icons-row__item"></div>
+                              <div simply-dropdown-menu-list="&quot;&quot;" class="generic-select-dropdown-menu__list is-table-list-actions-menu is-hidden">
+                                <div js-action-make-owner="&quot;&quot;" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item is-table-list-action is-hidden-for-future">
+                                  <div class="simply-dropdown-menu__list-icon">
+                                    <div class="simply-dropdown-menu__list-icon-pic is-make-owner"></div>
+                                  </div>
+                                  <div class="simply-dropdown-menu__list-label">Change to &quot;Editor&quot;</div>
+                                </div>
+                                <div js-action-revoke-access="&quot;&quot;" simply-dropdown-menu-item="&quot;&quot;" class="simply-dropdown-menu__list-item is-table-list-action is-delete-all">
+                                  <div class="simply-dropdown-menu__list-icon">
+                                    <div class="simply-dropdown-menu__list-icon-pic is-delete-all"></div>
+                                  </div>
+                                  <div class="simply-dropdown-menu__list-label">Remove from organization</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+      <div class="w-form-done">
+        <div>Thank you! Your submission has been received!</div>
+      </div>
+      <div class="w-form-fail">
+        <div>Oops! Something went wrong while submitting the form.</div>
+      </div>
+    </div>
+  </div>
+  <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=6330922ce4f9006ed6c0131b" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="../js/webflow.js" type="text/javascript"></script>
+  <script src="https://simplyframework.bitbucket.io/dist/js/simply-framework.js"></script>
+  <script src="https://protodrogowskaz.bitbucket.io/build/js/scripts-bundle.js"></script>
+</body>
+</html>
