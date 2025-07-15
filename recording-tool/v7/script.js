@@ -170,11 +170,15 @@ sessionList.addEventListener('click', async (e) => {
         currentSession = await DBHelper.getSession(id);
         if (currentSession) {
             currentSessionId = currentSession.id;
-            // Fetch metadata for all items to build the in-memory list
-            const notePromises = currentSession.itemIds.map(id => DBHelper.getNote(id));
-            const capturePromises = currentSession.itemIds.map(id => DBHelper.getCapture(id));
-            const items = (await Promise.all([...notePromises, ...capturePromises])).filter(Boolean); // Filter out nulls
-            allCaptures = items.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const itemPromises = currentSession.itemIds.map(async (id) => {
+                // Fetch both, one will be null. This is simpler than knowing the type beforehand.
+                const note = await DBHelper.getNote(id);
+                if (note) return note;
+                const capture = await DBHelper.getCapture(id);
+                if (capture) return { type: 'capture', timestamp: capture.timestamp }; // Only metadata
+                return null;
+            });
+            allCaptures = (await Promise.all(itemPromises)).filter(Boolean).sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
 
             setupRecordingView(`Session: ${new Date(currentSession.id).toLocaleString()}`);
         }
@@ -203,9 +207,9 @@ async function submitNote() {
         const uniqueTimestamp = getUniqueTimestamp(new Date());
         const note = { type: 'note', timestamp: uniqueTimestamp, text: text };
         
-        await DBHelper.addNote(note); // Save note to its store
-        currentSession.itemIds.push(note.timestamp); // Update session's item list
-        await DBHelper.saveSession(currentSession); // Save updated session
+        await DBHelper.addNote(note);
+        currentSession.itemIds.push(note.timestamp);
+        await DBHelper.saveSession(currentSession);
         
         allCaptures.push(note);
         allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
@@ -224,56 +228,9 @@ async function submitNote() {
     }
 }
 
-async function startRecording() {
-    try {
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        tabStream = await navigator.mediaDevices.getDisplayMedia({ video: { mediaSource: "tab" }, audio: true });
-        updateRecordingViewUI(true);
-        tabStream.getVideoTracks()[0].onended = stopRecording;
-        videoElement.srcObject = tabStream;
-        await videoElement.play();
-        const frequency = parseInt(frequencySelect.value, 10);
-        await performCapture(); // await first capture to ensure it's saved
-        captureInterval = setInterval(performCapture, frequency);
-    } catch (error) {
-        console.error("Recording start error:", error);
-        alert("Could not start recording. Please grant the required permissions.");
-        updateRecordingViewUI(false);
-    }
-}
-
-async function stopRecording() {
-    if (captureInterval) clearInterval(captureInterval);
-    captureInterval = null;
-    tabStream?.getTracks().forEach(track => track.stop());
-    micStream?.getTracks().forEach(track => track.stop());
-    tabStream = micStream = null;
-    await DBHelper.saveSession(currentSession); // Final save of session itemIds
-    updateRecordingViewUI(false);
-}
-
-async function performCapture() {
-    if (!tabStream || !micStream) return;
-    const frequency = parseInt(frequencySelect.value, 10);
-    const [videoBlob, micAudioBlob] = await Promise.all([recordVideoChunk(tabStream, frequency), recordAudioChunk(new MediaStream(micStream.getAudioTracks()), frequency)]);
-    const [videoChunkBase64, micAudioBase64] = await Promise.all([blobToBase64(videoBlob), blobToBase64(micAudioBlob)]);
-    const timestamp = getUniqueTimestamp(new Date());
-    const capture = { type: 'capture', timestamp, videoChunkBase64, micAudioBase64 };
-    
-    await DBHelper.addCapture(capture);
-    currentSession.itemIds.push(timestamp);
-    await DBHelper.saveSession(currentSession);
-    
-    // Add metadata to in-memory list for display
-    const captureMeta = { type: 'capture', timestamp: capture.timestamp };
-    allCaptures.push(captureMeta);
-    allCaptures.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-    applyFilter();
-    
-    if (currentFilter === 'all' || currentFilter === 'annotated') {
-        createTimelineEntry(captureMeta);
-    }
-}
+async function startRecording() { /* ... unchanged ... */ try { micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); tabStream = await navigator.mediaDevices.getDisplayMedia({ video: { mediaSource: "tab" }, audio: true }); updateRecordingViewUI(true); tabStream.getVideoTracks()[0].onended = stopRecording; videoElement.srcObject = tabStream; await videoElement.play(); const frequency = parseInt(frequencySelect.value, 10); await performCapture(); captureInterval = setInterval(performCapture, frequency); } catch (error) { console.error("Recording start error:", error); alert("Could not start recording. Please grant the required permissions."); updateRecordingViewUI(false); } }
+async function stopRecording() { /* ... unchanged ... */ if (captureInterval) clearInterval(captureInterval); captureInterval = null; tabStream?.getTracks().forEach(track => track.stop()); micStream?.getTracks().forEach(track => track.stop()); tabStream = micStream = null; await DBHelper.saveSession(currentSession); updateRecordingViewUI(false); }
+async function performCapture() { /* ... unchanged ... */ if (!tabStream || !micStream) return; const frequency = parseInt(frequencySelect.value, 10); const [videoBlob, micAudioBlob] = await Promise.all([recordVideoChunk(tabStream, frequency), recordAudioChunk(new MediaStream(micStream.getAudioTracks()), frequency)]); const [videoChunkBase64, micAudioBase64] = await Promise.all([blobToBase64(videoBlob), blobToBase64(micAudioBlob)]); const timestamp = getUniqueTimestamp(new Date()); const capture = { type: 'capture', timestamp, videoChunkBase64, micAudioBase64 }; await DBHelper.addCapture(capture); currentSession.itemIds.push(timestamp); await DBHelper.saveSession(currentSession); const captureMeta = { type: 'capture', timestamp: capture.timestamp }; allCaptures.push(captureMeta); allCaptures.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp)); applyFilter(); if (currentFilter === 'all' || currentFilter === 'annotated') { createTimelineEntry(captureMeta); } }
 
 // --- Timeline Rendering and Filtering ---
 function applyFilter() {
@@ -286,14 +243,12 @@ function applyFilter() {
         for (const itemWithIndex of itemsWithIndex) {
             if (itemWithIndex.type === 'note') {
                 annotatedSet.add(itemWithIndex);
-                // Find previous capture
                 for (let j = itemWithIndex.originalIndex - 1; j >= 0; j--) {
                     if (sourceCaptures[j].type === 'capture') {
                         annotatedSet.add(itemsWithIndex.find(i => i.originalIndex === j));
                         break;
                     }
                 }
-                // Find next capture
                  for (let j = itemWithIndex.originalIndex + 1; j < sourceCaptures.length; j++) {
                     if (sourceCaptures[j].type === 'capture') {
                          annotatedSet.add(itemsWithIndex.find(i => i.originalIndex === j));
@@ -311,7 +266,7 @@ function applyFilter() {
 filterControls.addEventListener('click', (e) => {
     if (e.target.classList.contains('filter-btn')) {
         currentFilter = e.target.dataset.filter;
-        renderTimeline(); // Full re-render only on filter change
+        renderTimeline();
     }
 });
 
@@ -328,28 +283,20 @@ function renderTimeline() {
 // --- Lazy Loading Logic ---
 const lazyLoadObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            loadMedia(entry.target);
-        } else {
-            unloadMedia(entry.target);
-        }
+        if (entry.isIntersecting) { loadMedia(entry.target); } else { unloadMedia(entry.target); }
     });
 }, { root: outputContainer, threshold: 0 });
 
 async function loadMedia(element) {
     const timestamp = element.dataset.timestamp;
     if (!timestamp) return;
-    
-    // Fetch the capture data with Base64 on demand
     const captureData = await DBHelper.getCapture(timestamp);
     if (!captureData) return;
-
     const video = element.querySelector('video');
     const audio = element.querySelector('audio');
     if (video && !video.src) { video.src = captureData.videoChunkBase64; }
     if (audio && !audio.src) { audio.src = captureData.micAudioBase64; }
 }
-
 function unloadMedia(element) {
     const video = element.querySelector('video');
     const audio = element.querySelector('audio');
@@ -394,11 +341,8 @@ function createTimelineEntry(item, nextSiblingElement = null) {
     }
     entryDiv.innerHTML = content;
     
-    if (nextSiblingElement) {
-        outputContainer.insertBefore(entryDiv, nextSiblingElement);
-    } else {
-        outputContainer.appendChild(entryDiv);
-    }
+    if (nextSiblingElement) { outputContainer.insertBefore(entryDiv, nextSiblingElement); } 
+    else { outputContainer.appendChild(entryDiv); }
 }
 
 // --- Note Action Logic ---
@@ -416,133 +360,15 @@ outputContainer.addEventListener('click', async (e) => {
     }
 });
 
-async function addNoteFromCapture(captureTimestamp) {
-    const initialTimestamp = new Date(new Date(captureTimestamp).getTime() + 10);
-    const uniqueTimestamp = getUniqueTimestamp(initialTimestamp);
-    const note = { type: 'note', timestamp: uniqueTimestamp, text: '' };
-    
-    await DBHelper.addNote(note);
-    currentSession.itemIds.push(note.timestamp);
-    allCaptures.push(note);
-    allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    currentSession.itemIds.sort((a, b) => new Date(a) - new Date(b));
-    await DBHelper.saveSession(currentSession);
-    applyFilter();
-    
-    const noteIndex = allCaptures.findIndex(c => c.timestamp === uniqueTimestamp);
-    const nextItem = allCaptures[noteIndex + 1];
-    const nextSiblingElement = nextItem ? document.getElementById(`entry-${nextItem.timestamp}`) : null;
-
-    if (currentFilter === 'all' || currentFilter === 'notes' || currentFilter === 'annotated') {
-        createTimelineEntry(note, nextSiblingElement);
-        enterEditMode(uniqueTimestamp);
-    }
-}
-
-async function deleteNote(timestamp) {
-    if (confirm('Are you sure you want to delete this note?')) {
-        await DBHelper.deleteNoteFromDB(timestamp);
-        
-        const noteIndex = allCaptures.findIndex(c => c.timestamp === timestamp);
-        if (noteIndex > -1) allCaptures.splice(noteIndex, 1);
-        
-        const idIndex = currentSession.itemIds.indexOf(timestamp);
-        if (idIndex > -1) currentSession.itemIds.splice(idIndex, 1);
-        
-        await DBHelper.saveSession(currentSession);
-        applyFilter();
-
-        const noteElement = document.getElementById(`entry-${timestamp}`);
-        if (noteElement) noteElement.remove();
-    }
-}
-
-function enterEditMode(timestamp) {
-    const noteDiv = document.getElementById(`entry-${timestamp}`);
-    if (!noteDiv) return;
-    const contentDiv = noteDiv.querySelector('.note-content');
-    const currentTextEl = contentDiv.querySelector('#pre');
-    const currentText = currentTextEl ? currentTextEl.innerText : '';
-    
-    noteDiv.querySelector('.entry-actions').style.display = 'none';
-    contentDiv.innerHTML = `<textarea class="note-edit-textarea" rows="3" style="background: white;">${currentText}</textarea>
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
-            <button class="cancel-edit-btn btn" data-timestamp="${timestamp}" style="background:var(--bg-input); color:var(--text-primary);">Cancel</button>
-            <button class="save-note-btn btn" data-timestamp="${timestamp}" style="background:var(--bg-button-dark); color:white;">Save Note</button>
-        </div>`;
-    const textarea = contentDiv.querySelector('textarea');
-    textarea.focus();
-    textarea.select();
-}
-
-function cancelNoteEdit(timestamp) {
-    const noteObject = allCaptures.find(c => c.timestamp === timestamp);
-    if (!noteObject) return;
-    const noteDiv = document.getElementById(`entry-${timestamp}`);
-    if (noteDiv) {
-        const contentDiv = noteDiv.querySelector('.note-content');
-        contentDiv.innerHTML = `<div id="pre">${noteObject.text}</div>`;
-        noteDiv.querySelector('.entry-actions').style.display = 'flex';
-    }
-}
-
-async function saveNoteEdit(timestamp) {
-    const noteObject = allCaptures.find(c => c.timestamp === timestamp);
-    if (noteObject) {
-        const noteDiv = document.getElementById(`entry-${timestamp}`);
-        const newText = noteDiv.querySelector('textarea').value;
-        noteObject.text = newText;
-        await DBHelper.updateNote(noteObject);
-        cancelNoteEdit(timestamp);
-    }
-}
+async function addNoteFromCapture(captureTimestamp) { /* ... unchanged ... */ const initialTimestamp = new Date(new Date(captureTimestamp).getTime() + 10); const uniqueTimestamp = getUniqueTimestamp(initialTimestamp); const note = { type: 'note', timestamp: uniqueTimestamp, text: '' }; await DBHelper.addNote(note); currentSession.itemIds.push(note.timestamp); allCaptures.push(note); allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); currentSession.itemIds.sort((a, b) => new Date(a) - new Date(b)); await DBHelper.saveSession(currentSession); applyFilter(); const noteIndex = allCaptures.findIndex(c => c.timestamp === uniqueTimestamp); const nextItem = allCaptures[noteIndex + 1]; const nextSiblingElement = nextItem ? document.getElementById(`entry-${nextItem.timestamp}`) : null; if (currentFilter === 'all' || currentFilter === 'notes' || currentFilter === 'annotated') { createTimelineEntry(note, nextSiblingElement); enterEditMode(uniqueTimestamp); } }
+async function deleteNote(timestamp) { /* ... unchanged ... */ if (confirm('Are you sure you want to delete this note?')) { await DBHelper.deleteNoteFromDB(timestamp); const noteIndex = allCaptures.findIndex(c => c.timestamp === timestamp); if (noteIndex > -1) allCaptures.splice(noteIndex, 1); const idIndex = currentSession.itemIds.indexOf(timestamp); if (idIndex > -1) currentSession.itemIds.splice(idIndex, 1); await DBHelper.saveSession(currentSession); applyFilter(); const noteElement = document.getElementById(`entry-${timestamp}`); if (noteElement) noteElement.remove(); } }
+function enterEditMode(timestamp) { /* ... unchanged ... */ const noteDiv = document.getElementById(`entry-${timestamp}`); if (!noteDiv) return; const contentDiv = noteDiv.querySelector('.note-content'); const currentTextEl = contentDiv.querySelector('#pre'); const currentText = currentTextEl ? currentTextEl.innerText : ''; noteDiv.querySelector('.entry-actions').style.display = 'none'; contentDiv.innerHTML = `<textarea class="note-edit-textarea" rows="3" style="background: white;">${currentText}</textarea><div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;"><button class="cancel-edit-btn btn" data-timestamp="${timestamp}" style="background:var(--bg-input); color:var(--text-primary);">Cancel</button><button class="save-note-btn btn" data-timestamp="${timestamp}" style="background:var(--bg-button-dark); color:white;">Save Note</button></div>`; const textarea = contentDiv.querySelector('textarea'); textarea.focus(); textarea.select(); }
+function cancelNoteEdit(timestamp) { /* ... unchanged ... */ const noteObject = allCaptures.find(c => c.timestamp === timestamp); if (!noteObject) return; const noteDiv = document.getElementById(`entry-${timestamp}`); if (noteDiv) { const contentDiv = noteDiv.querySelector('.note-content'); contentDiv.innerHTML = `<div id="pre">${noteObject.text}</div>`; noteDiv.querySelector('.entry-actions').style.display = 'flex'; } }
+async function saveNoteEdit(timestamp) { /* ... unchanged ... */ const noteObject = allCaptures.find(c => c.timestamp === timestamp); if (noteObject) { const noteDiv = document.getElementById(`entry-${timestamp}`); const newText = noteDiv.querySelector('textarea').value; noteObject.text = newText; await DBHelper.updateNote(noteObject); cancelNoteEdit(timestamp); } }
 
 // --- Helper Functions ---
 function getUniqueZipFilename(zip, baseName, extension) { /* ... unchanged ... */ let finalName = `${baseName}${extension}`; let counter = 1; while (zip.file(finalName)) { finalName = `${baseName} (${counter})${extension}`; counter++; } return finalName; }
-
-async function downloadAllAsZip() {
-    if (filteredCaptures.length === 0) return alert("No items to download in the current view!");
-    downloadButton.disabled = true;
-    downloadButton.querySelector('span').textContent = "Zipping...";
-    try {
-        const zip = new JSZip();
-        // Fetch full data for all items in the filtered view just for the export
-        const fetchPromises = filteredCaptures.map(item => {
-            if (item.type === 'note') return DBHelper.getNote(item.timestamp);
-            if (item.type === 'capture') return DBHelper.getCapture(item.timestamp);
-            return Promise.resolve(null);
-        });
-        const fullItems = (await Promise.all(fetchPromises)).filter(Boolean);
-
-        for (const item of fullItems) {
-            const timestampStr = getFormattedTimestamp(new Date(item.timestamp));
-            if (item.type === 'note') {
-                const baseName = `${timestampStr}_note`;
-                const fileName = getUniqueZipFilename(zip, baseName, '.txt');
-                zip.file(fileName, item.text);
-            } else if (item.type === 'capture') {
-                const videoBaseName = `${timestampStr}_video`;
-                const videoFileName = getUniqueZipFilename(zip, videoBaseName, '.webm');
-                zip.file(videoFileName, item.videoChunkBase64.split(',')[1], { base64: true });
-
-                const audioBaseName = `${timestampStr}_mic-audio`;
-                const audioFileName = getUniqueZipFilename(zip, audioBaseName, '.mp3');
-                zip.file(audioFileName, item.micAudioBase64.split(',')[1], { base64: true });
-            }
-        }
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(zipBlob);
-        link.download = `usability-session_${getFormattedTimestamp(new Date(currentSessionId))}_${currentFilter}.zip`;
-        link.click();
-        URL.revokeObjectURL(link.href);
-    } catch (e) { console.error(e); alert("Failed to create ZIP."); }
-    finally {
-        downloadButton.disabled = false;
-        downloadButton.querySelector('span').textContent = "Download ZIP";
-    }
-}
-
+async function downloadAllAsZip() { /* ... unchanged ... */ if (filteredCaptures.length === 0) return alert("No items to download in the current view!"); downloadButton.disabled = true; downloadButton.querySelector('span').textContent = "Zipping..."; try { const zip = new JSZip(); const fetchPromises = filteredCaptures.map(item => { if (item.type === 'note') return DBHelper.getNote(item.timestamp); if (item.type === 'capture') return DBHelper.getCapture(item.timestamp); return Promise.resolve(null); }); const fullItems = (await Promise.all(fetchPromises)).filter(Boolean); for (const item of fullItems) { const timestampStr = getFormattedTimestamp(new Date(item.timestamp)); if (item.type === 'note') { const baseName = `${timestampStr}_note`; const fileName = getUniqueZipFilename(zip, baseName, '.txt'); zip.file(fileName, item.text); } else if (item.type === 'capture') { const videoBaseName = `${timestampStr}_video`; const videoFileName = getUniqueZipFilename(zip, videoBaseName, '.webm'); zip.file(videoFileName, item.videoChunkBase64.split(',')[1], { base64: true }); const audioBaseName = `${timestampStr}_mic-audio`; const audioFileName = getUniqueZipFilename(zip, audioBaseName, '.mp3'); zip.file(audioFileName, item.micAudioBase64.split(',')[1], { base64: true }); } } const zipBlob = await zip.generateAsync({ type: 'blob' }); const link = document.createElement('a'); link.href = URL.createObjectURL(zipBlob); link.download = `usability-session_${getFormattedTimestamp(new Date(currentSessionId))}_${currentFilter}.zip`; link.click(); URL.revokeObjectURL(link.href); } catch (e) { console.error(e); alert("Failed to create ZIP."); } finally { downloadButton.disabled = false; downloadButton.querySelector('span').textContent = "Download ZIP"; } }
 function recordVideoChunk(stream, duration) { return new Promise((resolve, reject) => { const recorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp8,opus' }); const chunks = []; recorder.ondataavailable = e => chunks.push(e.data); recorder.onstop = () => resolve(new Blob(chunks, { type: 'video/webm' })); recorder.onerror = e => reject(e.error); recorder.start(); setTimeout(() => recorder.stop(), duration); }); }
 function recordAudioChunk(stream, duration) { return new Promise((resolve, reject) => { const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' }); const chunks = []; recorder.ondataavailable = e => chunks.push(e.data); recorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' })); recorder.onerror = e => reject(e.error); recorder.start(); setTimeout(() => recorder.stop(), duration); }); }
 const blobToBase64 = blob => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(blob); reader.onloadend = () => resolve(reader.result); reader.onerror = error => reject(error); });
@@ -551,6 +377,9 @@ function getFormattedTimestamp(date) { const YYYY = date.getFullYear(); const MM
 // --- Data Migration Logic ---
 async function checkForOldData() {
     try {
+        const migrationFlag = localStorage.getItem('migrationV1toV2Completed');
+        if (migrationFlag) return; // Don't show button if already migrated
+
         const dbs = await indexedDB.databases();
         if (dbs.some(db => db.name === 'UsabilitySessionsDB')) {
             migrateDataButton.style.display = 'inline-flex';
@@ -561,7 +390,7 @@ async function checkForOldData() {
 }
 
 migrateDataButton.addEventListener('click', async () => {
-    if (!confirm("This will migrate data from the old app version. The old data will not be deleted. Continue?")) return;
+    if (!confirm("This will migrate data from the old app version to the new, faster format. The old data will not be deleted. Continue?")) return;
 
     migrateDataButton.disabled = true;
     migrateDataButton.querySelector('span').textContent = 'Migrating...';
@@ -591,6 +420,10 @@ migrateDataButton.addEventListener('click', async () => {
                     itemPromises.push(DBHelper.addSession(newSession));
                     await Promise.all(itemPromises);
                 }
+                
+                // MODIFIED: Set flag in localStorage on success
+                localStorage.setItem('migrationV1toV2Completed', 'true');
+                
                 alert("Migration successful! Refreshing the page.");
                 location.reload();
             };
