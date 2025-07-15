@@ -221,6 +221,13 @@ async function submitNote() {
 
         if (currentFilter === 'all' || currentFilter === 'notes' || currentFilter === 'annotated') {
              createTimelineEntry(note, nextSiblingElement);
+             
+             // Find the newly created element by its ID
+             const newNoteElement = document.getElementById(`entry-${note.timestamp}`);
+             if (newNoteElement) {
+                // Scroll it into view with a smooth animation
+                newNoteElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+             }
         }
         
         noteInput.value = '';
