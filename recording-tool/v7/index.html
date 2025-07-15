@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usability Test Recorder</title>
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Local Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="sessionListView" class="view active">
+        <div class="container">
+            <header>
+                <h1>Usability Test Sessions</h1>
+                <p>Record, annotate, and manage your usability testing sessions</p>
+            </header>
+            <div class="session-list-controls">
+                <button id="newSessionButton" class="btn"><i class="fa-solid fa-plus"></i><span>Start New Session</span></button>
+            </div>
+            <ul id="sessionList"></ul>
+        </div>
+    </div>
+
+    <div id="recordingView" class="view">
+        <div class="container">
+            <div class="two-column-layout">
+                <div class="left-column">
+                    <a href="#" id="backButton" class="back-link"><i class="fa-solid fa-arrow-left"></i><span>Back to Sessions</span></a>
+                    <div class="controls-section">
+                        <h2 class="controls-header">Recording Controls</h2>
+                        <div class="config-item">
+                            <label for="frequencySelect">Capture Frequency</label>
+                            <select id="frequencySelect">
+                                <option value="120000">Every 120 seconds</option>
+                                <option value="60000">Every 60 seconds</option>
+                                <option value="40000">Every 40 seconds</option>
+                                <option value="30000">Every 30 seconds</option>
+                                <option value="20000" selected>Every 20 seconds</option>
+                                <option value="10000">Every 10 seconds</option>
+                                <option value="5000">Every 5 seconds</option>
+                                <option value="2000">Every 2 seconds</option>
+                            </select>
+                        </div>
+                         <button id="startButton" class="btn"><i class="fa-solid fa-circle-play"></i><span>Start Recording</span></button>
+                        <button id="stopButton" class="btn" style="display: none;"><i class="fa-solid fa-circle-stop"></i><span>Stop Recording</span></button>
+                    </div>
+                    <div class="controls-section">
+                        <h2 class="controls-header">Add Note</h2>
+                        <div id="noteInputContainer">
+                            <textarea id="noteInput" rows="3" placeholder="Add a note about what's happening..."></textarea>
+                            <button id="addNoteButton" class="btn"><i class="fa-solid fa-plus"></i><span>Add Note</span></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="right-column">
+                    <div class="right-column-header">
+                        <h1 id="recordingViewHeader"></h1>
+                        <button id="downloadButton" class="btn"><i class="fa-solid fa-download"></i><span>Download ZIP</span></button>
+                    </div>
+                    <div id="filterControlsContainer">
+                        <div class="filter-controls">
+                            <button class="filter-btn btn active" data-filter="all">All</button>
+                            <button class="filter-btn btn" data-filter="annotated">Annotated</button>
+                            <button class="filter-btn btn" data-filter="notes">Notes</button>
+                        </div>
+                    </div>
+                    <div id="output"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <video id="video-preview" autoplay muted></video>
+
+    <!-- Local Script (defer ensures it runs after DOM is parsed) -->
+    <script src="script.js" defer></script>
+</body>
+</html>
