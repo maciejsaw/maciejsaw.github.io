@@ -228,8 +228,55 @@ async function submitNote() {
     }
 }
 
-async function startRecording() { /* ... unchanged ... */ try { micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); tabStream = await navigator.mediaDevices.getDisplayMedia({ video: { mediaSource: "tab" }, audio: true }); updateRecordingViewUI(true); tabStream.getVideoTracks()[0].onended = stopRecording; videoElement.srcObject = tabStream; await videoElement.play(); const frequency = parseInt(frequencySelect.value, 10); await performCapture(); captureInterval = setInterval(performCapture, frequency); } catch (error) { console.error("Recording start error:", error); alert("Could not start recording. Please grant the required permissions."); updateRecordingViewUI(false); } }
-async function stopRecording() { /* ... unchanged ... */ if (captureInterval) clearInterval(captureInterval); captureInterval = null; tabStream?.getTracks().forEach(track => track.stop()); micStream?.getTracks().forEach(track => track.stop()); tabStream = micStream = null; await DBHelper.saveSession(currentSession); updateRecordingViewUI(false); }
+async function startRecording() {
+    try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        tabStream = await navigator.mediaDevices.getDisplayMedia({ video: { mediaSource: "tab" }, audio: true });
+        updateRecordingViewUI(true);
+        tabStream.getVideoTracks()[0].onended = stopRecording;
+        videoElement.srcObject = tabStream;
+        await videoElement.play();
+
+        // --- FIX STARTS HERE ---
+        // Instead of setInterval, use a self-scheduling async function with setTimeout.
+        // This ensures one capture finishes before the next one starts, without creating a gap.
+        const frequency = parseInt(frequencySelect.value, 10);
+
+        (async function recordingLoop() {
+            // If the stop button was pressed, the isRecording flag will be false, stopping the loop.
+            if (!isRecording) return;
+
+            // Wait for the entire capture process (recording, conversion, saving) to finish.
+            await performCapture();
+
+            // If still recording, schedule the next capture to run immediately after this one is done.
+            if (isRecording) {
+                // The global 'captureInterval' variable will hold the timer ID from setTimeout.
+                captureInterval = setTimeout(recordingLoop, 0);
+            }
+        })(); // Immediately invoke the loop to start the first capture.
+        // --- FIX ENDS HERE ---
+
+    } catch (error) {
+        console.error("Recording start error:", error);
+        alert("Could not start recording. Please grant the required permissions.");
+        updateRecordingViewUI(false);
+    }
+}
+
+async function stopRecording() {
+    // Change clearInterval to clearTimeout to match the new recording loop
+    if (captureInterval) clearTimeout(captureInterval);
+    captureInterval = null;
+    
+    // The rest of the function is correct
+    tabStream?.getTracks().forEach(track => track.stop());
+    micStream?.getTracks().forEach(track => track.stop());
+    tabStream = micStream = null;
+    await DBHelper.saveSession(currentSession);
+    updateRecordingViewUI(false);
+}
+
 async function performCapture() { /* ... unchanged ... */ if (!tabStream || !micStream) return; const frequency = parseInt(frequencySelect.value, 10); const [videoBlob, micAudioBlob] = await Promise.all([recordVideoChunk(tabStream, frequency), recordAudioChunk(new MediaStream(micStream.getAudioTracks()), frequency)]); const [videoChunkBase64, micAudioBase64] = await Promise.all([blobToBase64(videoBlob), blobToBase64(micAudioBlob)]); const timestamp = getUniqueTimestamp(new Date()); const capture = { type: 'capture', timestamp, videoChunkBase64, micAudioBase64 }; await DBHelper.addCapture(capture); currentSession.itemIds.push(timestamp); await DBHelper.saveSession(currentSession); const captureMeta = { type: 'capture', timestamp: capture.timestamp }; allCaptures.push(captureMeta); allCaptures.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp)); applyFilter(); if (currentFilter === 'all' || currentFilter === 'annotated') { createTimelineEntry(captureMeta); } }
 
 // --- Timeline Rendering and Filtering ---
