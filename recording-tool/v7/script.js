@@ -75,7 +75,7 @@ window.addEventListener('load', async () => { await DBHelper.init(); await showS
 function setupRecordingView(headerText) {
     recordingViewHeader.textContent = headerText;
     updateRecordingViewUI(false);
-    renderTimeline();
+    renderTimeline(); // Full render on setup
     showView('recordingView');
 }
 
@@ -134,10 +134,20 @@ async function submitNote() {
     if (text) {
         const uniqueTimestamp = getUniqueTimestamp(new Date());
         const note = { type: 'note', timestamp: uniqueTimestamp, text: text };
+        
         allCaptures.push(note);
         allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
         await DBHelper.saveCurrentSession();
-        renderTimeline();
+        applyFilter(); // Keep data in sync
+
+        const noteIndex = allCaptures.findIndex(c => c.timestamp === uniqueTimestamp);
+        const nextItem = allCaptures[noteIndex + 1];
+        const nextSiblingElement = nextItem ? document.getElementById(`entry-${nextItem.timestamp}`) : null;
+
+        if (currentFilter === 'all' || currentFilter === 'notes' || currentFilter === 'annotated') {
+             createTimelineEntry(note, nextSiblingElement);
+        }
+        
         noteInput.value = '';
         noteInput.focus();
     }
@@ -177,22 +187,19 @@ async function performCapture() {
     const [videoBlob, micAudioBlob] = await Promise.all([recordVideoChunk(tabStream, frequency), recordAudioChunk(new MediaStream(micStream.getAudioTracks()), frequency)]);
     const [videoChunkBase64, micAudioBase64] = await Promise.all([blobToBase64(videoBlob), blobToBase64(micAudioBlob)]);
     const captureSet = { type: 'capture', timestamp: getUniqueTimestamp(new Date()), videoChunkBase64, micAudioBase64 };
+    
     allCaptures.push(captureSet);
-    allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    renderTimeline();
+    applyFilter(); // Keep data in sync
+    
+    if (currentFilter === 'all' || currentFilter === 'annotated') {
+        createTimelineEntry(captureSet); // Appends to the end
+    }
 }
 
 // --- Timeline Rendering and Filtering ---
-filterControls.addEventListener('click', (e) => {
-    if (e.target.classList.contains('filter-btn')) {
-        currentFilter = e.target.dataset.filter;
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        e.target.classList.add('active');
-        renderTimeline();
-    }
-});
 
-function renderTimeline() {
+// NEW: Decoupled data filtering from DOM rendering
+function applyFilter() {
     const sourceCaptures = [...allCaptures];
     if (currentFilter === 'notes') {
         filteredCaptures = sourceCaptures.filter(item => item.type === 'note');
@@ -209,21 +216,29 @@ function renderTimeline() {
     } else {
         filteredCaptures = sourceCaptures;
     }
+}
 
+filterControls.addEventListener('click', (e) => {
+    if (e.target.classList.contains('filter-btn')) {
+        currentFilter = e.target.dataset.filter;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        renderTimeline(); // Full re-render only on filter change
+    }
+});
+
+function renderTimeline() {
+    applyFilter(); // First, update the filtered data
     outputContainer.innerHTML = '';
     if (filteredCaptures.length === 0) {
         outputContainer.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding-top: 2rem; width: 100%;">' + (allCaptures.length > 0 ? 'No items match the current filter.' : 'No recordings or notes yet.') + '</p>';
     } else {
         filteredCaptures.forEach(item => createTimelineEntry(item));
     }
-
-    if (isRecording) {
-        outputContainer.scroll({ top: outputContainer.scrollHeight, behavior: 'smooth' });
-    }
 }
 
 // --- Lazy Loading Logic ---
-const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+const lazyLoadObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             loadMedia(entry.target);
@@ -241,35 +256,26 @@ function loadMedia(element) {
 
     const video = element.querySelector('video');
     const audio = element.querySelector('audio');
-    if (video && !video.src) {
-        video.src = captureData.videoChunkBase64;
-    }
-    if (audio && !audio.src) {
-        audio.src = captureData.micAudioBase64;
-    }
+    if (video && !video.src) { video.src = captureData.videoChunkBase64; }
+    if (audio && !audio.src) { audio.src = captureData.micAudioBase64; }
 }
+
 function unloadMedia(element) {
     const video = element.querySelector('video');
     const audio = element.querySelector('audio');
-    if (video && video.src) {
-        video.pause();
-        video.removeAttribute('src');
-        video.load();
-    }
-    if (audio && audio.src) {
-        audio.pause();
-        audio.removeAttribute('src');
-        audio.load();
-    }
+    if (video && video.src) { video.pause(); video.removeAttribute('src'); video.load(); }
+    if (audio && audio.src) { audio.pause(); audio.removeAttribute('src'); audio.load(); }
 }
 
-function createTimelineEntry(item) {
+function createTimelineEntry(item, nextSiblingElement = null) {
     const entryDiv = document.createElement('div');
+    entryDiv.id = `entry-${item.timestamp}`;
     let content = '';
     const timeString = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
     switch (item.type) {
         case 'note':
-            entryDiv.className = 'note-entry'; entryDiv.id = `note-${item.timestamp}`;
+            entryDiv.className = 'note-entry';
             content = `
                 <div class="entry-header">
                     <div class="entry-header-title"><i class="fa-solid fa-note-sticky"></i> Note <span class="entry-header-time">${timeString}</span></div>
@@ -297,7 +303,12 @@ function createTimelineEntry(item) {
             break;
     }
     entryDiv.innerHTML = content;
-    outputContainer.appendChild(entryDiv);
+    
+    if (nextSiblingElement) {
+        outputContainer.insertBefore(entryDiv, nextSiblingElement);
+    } else {
+        outputContainer.appendChild(entryDiv);
+    }
 }
 
 // --- Note Action Logic ---
@@ -311,7 +322,7 @@ outputContainer.addEventListener('click', async (e) => {
     else if (timestamp) {
         if (button.classList.contains('edit-note-btn')) { enterEditMode(timestamp); }
         else if (button.classList.contains('save-note-btn')) { await saveNoteEdit(timestamp); }
-        else if (button.classList.contains('cancel-edit-btn')) { renderTimeline(); }
+        else if (button.classList.contains('cancel-edit-btn')) { cancelNoteEdit(timestamp); }
     }
 });
 
@@ -319,11 +330,20 @@ async function addNoteFromCapture(captureTimestamp) {
     const initialTimestamp = new Date(new Date(captureTimestamp).getTime() + 10);
     const uniqueTimestamp = getUniqueTimestamp(initialTimestamp);
     const note = { type: 'note', timestamp: uniqueTimestamp, text: '' };
+    
     allCaptures.push(note);
     allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     await DBHelper.saveCurrentSession();
-    renderTimeline();
-    enterEditMode(uniqueTimestamp);
+    applyFilter(); // Keep data in sync
+    
+    const noteIndex = allCaptures.findIndex(c => c.timestamp === uniqueTimestamp);
+    const nextItem = allCaptures[noteIndex + 1];
+    const nextSiblingElement = nextItem ? document.getElementById(`entry-${nextItem.timestamp}`) : null;
+
+    if (currentFilter === 'all' || currentFilter === 'notes' || currentFilter === 'annotated') {
+        createTimelineEntry(note, nextSiblingElement);
+        enterEditMode(uniqueTimestamp);
+    }
 }
 
 async function deleteNote(timestamp) {
@@ -332,13 +352,17 @@ async function deleteNote(timestamp) {
         if (noteIndex > -1) {
             allCaptures.splice(noteIndex, 1);
             await DBHelper.saveCurrentSession();
-            renderTimeline();
+            applyFilter(); // Keep data in sync
+            const noteElement = document.getElementById(`entry-${timestamp}`);
+            if (noteElement) {
+                noteElement.remove();
+            }
         }
     }
 }
 
 function enterEditMode(timestamp) {
-    const noteDiv = document.getElementById(`note-${timestamp}`);
+    const noteDiv = document.getElementById(`entry-${timestamp}`);
     if (!noteDiv) return;
     const contentDiv = noteDiv.querySelector('.note-content');
     const currentTextEl = contentDiv.querySelector('#pre');
@@ -355,15 +379,28 @@ function enterEditMode(timestamp) {
     textarea.select();
 }
 
+function cancelNoteEdit(timestamp) {
+    const noteObject = allCaptures.find(c => c.timestamp === timestamp);
+    if (!noteObject) return;
+    const noteDiv = document.getElementById(`entry-${timestamp}`);
+    if (noteDiv) {
+        const contentDiv = noteDiv.querySelector('.note-content');
+        contentDiv.innerHTML = `<div id="pre">${noteObject.text}</div>`;
+        noteDiv.querySelector('.edit-note-btn').style.display = 'flex';
+        noteDiv.querySelector('.delete-note-btn').style.display = 'flex';
+    }
+}
+
 async function saveNoteEdit(timestamp) {
-    const noteDiv = document.getElementById(`note-${timestamp}`);
-    const newText = noteDiv.querySelector('textarea').value;
-    const noteObject = allCaptures.find(c => c.type === 'note' && c.timestamp === timestamp);
+    const noteObject = allCaptures.find(c => c.timestamp === timestamp);
     if (noteObject) {
+        const noteDiv = document.getElementById(`entry-${timestamp}`);
+        const newText = noteDiv.querySelector('textarea').value;
         noteObject.text = newText;
         await DBHelper.saveCurrentSession();
+        // Just revert the single item instead of re-rendering the whole list
+        cancelNoteEdit(timestamp);
     }
-    renderTimeline();
 }
 
 // --- Helper Functions ---
