@@ -2,7 +2,6 @@
 const sessionListView = document.getElementById('sessionListView');
 const recordingView = document.getElementById('recordingView');
 const newSessionButton = document.getElementById('newSessionButton');
-const migrateDataButton = document.getElementById('migrateDataButton');
 const sessionList = document.getElementById('sessionList');
 const startButton = document.getElementById('startButton');
 const stopButton = document.getElementById('stopButton');
@@ -19,81 +18,30 @@ const filterControls = document.querySelector('.filter-controls');
 // --- State Variables ---
 let tabStream, micStream, captureInterval;
 let isRecording = false;
-let allCaptures = []; // This will now hold METADATA only when a session is loaded.
+let allCaptures = [];
 let filteredCaptures = [];
-let currentSession = null; // Will hold the full session object including itemIds
 let currentSessionId = null;
 let currentFilter = 'all';
-
-// --- Database Configuration ---
-const DB_NAME = 'UsabilitySessionsDB_v2';
-const DB_VERSION = 1;
 
 // --- Database Helper ---
 const DBHelper = {
     db: null,
-    init() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
-            request.onerror = event => reject("Database error: " + event.target.errorCode);
-            request.onsuccess = event => {
-                this.db = event.target.result;
-                resolve(this.db);
-            };
-            request.onupgradeneeded = event => {
-                const db = event.target.result;
-                db.createObjectStore('sessions', { keyPath: 'id' });
-                db.createObjectStore('captures', { keyPath: 'timestamp' });
-                db.createObjectStore('notes', { keyPath: 'timestamp' });
-            };
-        });
-    },
-
-    // Generic function to perform a transaction
-    _transaction(storeName, mode) {
-        return this.db.transaction(storeName, mode).objectStore(storeName);
-    },
-
-    // Session operations
-    addSession(session) { return new Promise((resolve, reject) => { const request = this._transaction('sessions', 'readwrite').add(session); request.onsuccess = resolve; request.onerror = reject; }); },
-    saveSession(session) { return new Promise((resolve, reject) => { const request = this._transaction('sessions', 'readwrite').put(session); request.onsuccess = resolve; request.onerror = reject; }); },
-    getSession(id) { return new Promise((resolve, reject) => { const request = this._transaction('sessions', 'readonly').get(id); request.onsuccess = () => resolve(request.result); request.onerror = reject; }); },
-    getAllSessions() { return new Promise((resolve, reject) => { const request = this._transaction('sessions', 'readonly').getAll(); request.onsuccess = () => resolve(request.result); request.onerror = reject; }); },
-    
-    // Item operations
-    addCapture(capture) { return new Promise((resolve, reject) => { const request = this._transaction('captures', 'readwrite').add(capture); request.onsuccess = resolve; request.onerror = reject; }); },
-    getCapture(id) { return new Promise((resolve, reject) => { const request = this._transaction('captures', 'readonly').get(id); request.onsuccess = () => resolve(request.result); request.onerror = reject; }); },
-    addNote(note) { return new Promise((resolve, reject) => { const request = this._transaction('notes', 'readwrite').add(note); request.onsuccess = resolve; request.onerror = reject; }); },
-    getNote(id) { return new Promise((resolve, reject) => { const request = this._transaction('notes', 'readonly').get(id); request.onsuccess = () => resolve(request.result); request.onerror = reject; }); },
-    updateNote(note) { return new Promise((resolve, reject) => { const request = this._transaction('notes', 'readwrite').put(note); request.onsuccess = resolve; request.onerror = reject; }); },
-    
-    // Multi-store transaction for safe deletion
-    deleteSessionAndItems(sessionId, itemIds) {
-        return new Promise((resolve, reject) => {
-            const tx = this.db.transaction(['sessions', 'captures', 'notes'], 'readwrite');
-            tx.objectStore('sessions').delete(sessionId);
-            const captureStore = tx.objectStore('captures');
-            const noteStore = tx.objectStore('notes');
-            itemIds.forEach(id => {
-                // We don't know the type, so try deleting from both. It's safe.
-                captureStore.delete(id);
-                noteStore.delete(id);
-            });
-            tx.oncomplete = resolve;
-            tx.onerror = reject;
-        });
-    },
-    deleteNoteFromDB(noteId) {
-        return new Promise((resolve, reject) => {
-            const request = this._transaction('notes', 'readwrite').delete(noteId);
-            request.onsuccess = resolve;
-            request.onerror = reject;
-        });
-    }
+    init() { return new Promise((resolve, reject) => { const request = indexedDB.open('UsabilitySessionsDB', 1); request.onerror = event => reject("Database error: " + event.target.errorCode); request.onsuccess = event => { this.db = event.target.result; resolve(this.db); }; request.onupgradeneeded = event => { const db = event.target.result; db.createObjectStore('sessions', { keyPath: 'id' }); }; }); },
+    async saveCurrentSession() { if (currentSessionId && allCaptures) { return DBHelper.saveSession({ id: currentSessionId, captures: allCaptures }); } },
+    saveSession(sessionData) { return new Promise((resolve, reject) => { const transaction = this.db.transaction(['sessions'], 'readwrite'); const store = transaction.objectStore('sessions'); const request = store.put(sessionData); transaction.oncomplete = () => resolve(); transaction.onerror = event => reject("Save error: " + event.target.error); }); },
+    getSession(id) { return new Promise((resolve, reject) => { const transaction = this.db.transaction(['sessions'], 'readonly'); const store = transaction.objectStore('sessions'); const request = store.get(id); request.onsuccess = () => resolve(request.result); request.onerror = event => reject("Get error: " + event.target.error); }); },
+    getAllSessions() { return new Promise((resolve, reject) => { const transaction = this.db.transaction(['sessions'], 'readonly'); const store = transaction.objectStore('sessions'); const request = store.getAll(); request.onsuccess = () => resolve(request.result); request.onerror = event => reject("Get all error: " + event.target.error); }); },
+    deleteSession(id) { return new Promise((resolve, reject) => { const transaction = this.db.transaction(['sessions'], 'readwrite'); const store = transaction.objectStore('sessions'); const request = store.delete(id); transaction.oncomplete = () => resolve(); transaction.onerror = event => reject("Delete error: " + event.target.error); }); }
 };
 
 // --- View & UI Logic ---
 function showView(viewId) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(viewId).classList.add('active'); }
+
+function getSessionStats(session) {
+    const capturesCount = session.captures.filter(c => c.type === 'capture').length;
+    const notesCount = session.captures.filter(c => c.type === 'note').length;
+    return { capturesCount, notesCount };
+}
 
 async function showSessionList() {
     sessionList.innerHTML = '';
@@ -102,16 +50,14 @@ async function showSessionList() {
         sessionList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No saved sessions yet.</p>';
     } else {
         sessions.sort((a, b) => b.id - a.id).forEach(session => {
-            const capturesCount = session.itemIds.filter(id => allCaptures.find(c => c.timestamp === id && c.type === 'capture')).length;
-            const notesCount = session.itemIds.filter(id => allCaptures.find(c => c.timestamp === id && c.type === 'note')).length;
-            
+            const stats = getSessionStats(session);
             const li = document.createElement('li');
             li.className = 'session-item';
             li.dataset.id = session.id;
             li.innerHTML = `
                 <div class="session-item-info">
                     <strong>Session from ${new Date(session.id).toLocaleString()}</strong>
-                    <span>${session.itemIds.length} items</span>
+                    <span>${stats.capturesCount} captures • ${stats.notesCount} notes</span>
                 </div>
                 <div class="session-item-actions">
                     <button class="open-btn btn" data-id="${session.id}"><i class="fa-solid fa-arrow-right-to-bracket"></i> <span>Open</span></button>
@@ -124,16 +70,12 @@ async function showSessionList() {
     showView('sessionListView');
 }
 
-window.addEventListener('load', async () => {
-    await DBHelper.init();
-    await showSessionList();
-    await checkForOldData();
-});
+window.addEventListener('load', async () => { await DBHelper.init(); await showSessionList(); });
 
 function setupRecordingView(headerText) {
     recordingViewHeader.textContent = headerText;
     updateRecordingViewUI(false);
-    renderTimeline();
+    renderTimeline(); // Full render on setup
     showView('recordingView');
 }
 
@@ -145,11 +87,9 @@ function updateRecordingViewUI(isRecordingNow) {
 }
 
 // --- Navigation & Event Listeners ---
-newSessionButton.addEventListener('click', async () => {
+newSessionButton.addEventListener('click', () => {
     currentSessionId = Date.now();
-    currentSession = { id: currentSessionId, itemIds: [] };
     allCaptures = [];
-    await DBHelper.addSession(currentSession);
     setupRecordingView(`Session: ${new Date().toLocaleString()}`);
 });
 
@@ -159,24 +99,16 @@ sessionList.addEventListener('click', async (e) => {
 
     const id = parseInt(button.dataset.id, 10);
     if (button.classList.contains('delete-btn')) {
-        if (confirm('Are you sure you want to delete this session and all its data? This cannot be undone.')) {
-            const sessionToDelete = await DBHelper.getSession(id);
-            if(sessionToDelete) {
-                await DBHelper.deleteSessionAndItems(id, sessionToDelete.itemIds);
-                await showSessionList();
-            }
+        if (confirm('Are you sure you want to delete this session? This cannot be undone.')) {
+            await DBHelper.deleteSession(id);
+            await showSessionList();
         }
     } else if (button.classList.contains('open-btn')) {
-        currentSession = await DBHelper.getSession(id);
-        if (currentSession) {
-            currentSessionId = currentSession.id;
-            // Fetch metadata for all items to build the in-memory list
-            const notePromises = currentSession.itemIds.map(id => DBHelper.getNote(id));
-            const capturePromises = currentSession.itemIds.map(id => DBHelper.getCapture(id));
-            const items = (await Promise.all([...notePromises, ...capturePromises])).filter(Boolean); // Filter out nulls
-            allCaptures = items.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-            setupRecordingView(`Session: ${new Date(currentSession.id).toLocaleString()}`);
+        const session = await DBHelper.getSession(id);
+        if (session) {
+            currentSessionId = session.id;
+            allCaptures = session.captures;
+            setupRecordingView(`Session: ${new Date(session.id).toLocaleString()}`);
         }
     }
 });
@@ -203,13 +135,10 @@ async function submitNote() {
         const uniqueTimestamp = getUniqueTimestamp(new Date());
         const note = { type: 'note', timestamp: uniqueTimestamp, text: text };
         
-        await DBHelper.addNote(note); // Save note to its store
-        currentSession.itemIds.push(note.timestamp); // Update session's item list
-        await DBHelper.saveSession(currentSession); // Save updated session
-        
         allCaptures.push(note);
         allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        applyFilter();
+        await DBHelper.saveCurrentSession();
+        applyFilter(); // Keep data in sync
 
         const noteIndex = allCaptures.findIndex(c => c.timestamp === uniqueTimestamp);
         const nextItem = allCaptures[noteIndex + 1];
@@ -233,7 +162,7 @@ async function startRecording() {
         videoElement.srcObject = tabStream;
         await videoElement.play();
         const frequency = parseInt(frequencySelect.value, 10);
-        await performCapture(); // await first capture to ensure it's saved
+        performCapture();
         captureInterval = setInterval(performCapture, frequency);
     } catch (error) {
         console.error("Recording start error:", error);
@@ -248,7 +177,7 @@ async function stopRecording() {
     tabStream?.getTracks().forEach(track => track.stop());
     micStream?.getTracks().forEach(track => track.stop());
     tabStream = micStream = null;
-    await DBHelper.saveSession(currentSession); // Final save of session itemIds
+    await DBHelper.saveCurrentSession();
     updateRecordingViewUI(false);
 }
 
@@ -257,49 +186,30 @@ async function performCapture() {
     const frequency = parseInt(frequencySelect.value, 10);
     const [videoBlob, micAudioBlob] = await Promise.all([recordVideoChunk(tabStream, frequency), recordAudioChunk(new MediaStream(micStream.getAudioTracks()), frequency)]);
     const [videoChunkBase64, micAudioBase64] = await Promise.all([blobToBase64(videoBlob), blobToBase64(micAudioBlob)]);
-    const timestamp = getUniqueTimestamp(new Date());
-    const capture = { type: 'capture', timestamp, videoChunkBase64, micAudioBase64 };
+    const captureSet = { type: 'capture', timestamp: getUniqueTimestamp(new Date()), videoChunkBase64, micAudioBase64 };
     
-    await DBHelper.addCapture(capture);
-    currentSession.itemIds.push(timestamp);
-    await DBHelper.saveSession(currentSession);
-    
-    // Add metadata to in-memory list for display
-    const captureMeta = { type: 'capture', timestamp: capture.timestamp };
-    allCaptures.push(captureMeta);
-    allCaptures.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-    applyFilter();
+    allCaptures.push(captureSet);
+    applyFilter(); // Keep data in sync
     
     if (currentFilter === 'all' || currentFilter === 'annotated') {
-        createTimelineEntry(captureMeta);
+        createTimelineEntry(captureSet); // Appends to the end
     }
 }
 
 // --- Timeline Rendering and Filtering ---
+
+// NEW: Decoupled data filtering from DOM rendering
 function applyFilter() {
     const sourceCaptures = [...allCaptures];
     if (currentFilter === 'notes') {
         filteredCaptures = sourceCaptures.filter(item => item.type === 'note');
     } else if (currentFilter === 'annotated') {
         const annotatedSet = new Set();
-        const itemsWithIndex = sourceCaptures.map((item, index) => ({...item, originalIndex: index}));
-        for (const itemWithIndex of itemsWithIndex) {
-            if (itemWithIndex.type === 'note') {
-                annotatedSet.add(itemWithIndex);
-                // Find previous capture
-                for (let j = itemWithIndex.originalIndex - 1; j >= 0; j--) {
-                    if (sourceCaptures[j].type === 'capture') {
-                        annotatedSet.add(itemsWithIndex.find(i => i.originalIndex === j));
-                        break;
-                    }
-                }
-                // Find next capture
-                 for (let j = itemWithIndex.originalIndex + 1; j < sourceCaptures.length; j++) {
-                    if (sourceCaptures[j].type === 'capture') {
-                         annotatedSet.add(itemsWithIndex.find(i => i.originalIndex === j));
-                        break;
-                    }
-                }
+        for (let i = 0; i < sourceCaptures.length; i++) {
+            if (sourceCaptures[i].type === 'note') {
+                annotatedSet.add(sourceCaptures[i]);
+                for (let j = i - 1; j >= 0; j--) { if (sourceCaptures[j].type === 'capture') { annotatedSet.add(sourceCaptures[j]); break; } }
+                for (let j = i + 1; j < sourceCaptures.length; j++) { if (sourceCaptures[j].type === 'capture') { annotatedSet.add(sourceCaptures[j]); break; } }
             }
         }
         filteredCaptures = Array.from(annotatedSet).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
@@ -311,12 +221,14 @@ function applyFilter() {
 filterControls.addEventListener('click', (e) => {
     if (e.target.classList.contains('filter-btn')) {
         currentFilter = e.target.dataset.filter;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
         renderTimeline(); // Full re-render only on filter change
     }
 });
 
 function renderTimeline() {
-    applyFilter();
+    applyFilter(); // First, update the filtered data
     outputContainer.innerHTML = '';
     if (filteredCaptures.length === 0) {
         outputContainer.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding-top: 2rem; width: 100%;">' + (allCaptures.length > 0 ? 'No items match the current filter.' : 'No recordings or notes yet.') + '</p>';
@@ -336,12 +248,10 @@ const lazyLoadObserver = new IntersectionObserver((entries) => {
     });
 }, { root: outputContainer, threshold: 0 });
 
-async function loadMedia(element) {
+function loadMedia(element) {
     const timestamp = element.dataset.timestamp;
     if (!timestamp) return;
-    
-    // Fetch the capture data with Base64 on demand
-    const captureData = await DBHelper.getCapture(timestamp);
+    const captureData = allCaptures.find(c => c.timestamp === timestamp);
     if (!captureData) return;
 
     const video = element.querySelector('video');
@@ -421,13 +331,10 @@ async function addNoteFromCapture(captureTimestamp) {
     const uniqueTimestamp = getUniqueTimestamp(initialTimestamp);
     const note = { type: 'note', timestamp: uniqueTimestamp, text: '' };
     
-    await DBHelper.addNote(note);
-    currentSession.itemIds.push(note.timestamp);
     allCaptures.push(note);
     allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    currentSession.itemIds.sort((a, b) => new Date(a) - new Date(b));
-    await DBHelper.saveSession(currentSession);
-    applyFilter();
+    await DBHelper.saveCurrentSession();
+    applyFilter(); // Keep data in sync
     
     const noteIndex = allCaptures.findIndex(c => c.timestamp === uniqueTimestamp);
     const nextItem = allCaptures[noteIndex + 1];
@@ -441,19 +348,16 @@ async function addNoteFromCapture(captureTimestamp) {
 
 async function deleteNote(timestamp) {
     if (confirm('Are you sure you want to delete this note?')) {
-        await DBHelper.deleteNoteFromDB(timestamp);
-        
         const noteIndex = allCaptures.findIndex(c => c.timestamp === timestamp);
-        if (noteIndex > -1) allCaptures.splice(noteIndex, 1);
-        
-        const idIndex = currentSession.itemIds.indexOf(timestamp);
-        if (idIndex > -1) currentSession.itemIds.splice(idIndex, 1);
-        
-        await DBHelper.saveSession(currentSession);
-        applyFilter();
-
-        const noteElement = document.getElementById(`entry-${timestamp}`);
-        if (noteElement) noteElement.remove();
+        if (noteIndex > -1) {
+            allCaptures.splice(noteIndex, 1);
+            await DBHelper.saveCurrentSession();
+            applyFilter(); // Keep data in sync
+            const noteElement = document.getElementById(`entry-${timestamp}`);
+            if (noteElement) {
+                noteElement.remove();
+            }
+        }
     }
 }
 
@@ -463,8 +367,8 @@ function enterEditMode(timestamp) {
     const contentDiv = noteDiv.querySelector('.note-content');
     const currentTextEl = contentDiv.querySelector('#pre');
     const currentText = currentTextEl ? currentTextEl.innerText : '';
-    
-    noteDiv.querySelector('.entry-actions').style.display = 'none';
+    noteDiv.querySelector('.edit-note-btn').style.display = 'none';
+    noteDiv.querySelector('.delete-note-btn').style.display = 'none';
     contentDiv.innerHTML = `<textarea class="note-edit-textarea" rows="3" style="background: white;">${currentText}</textarea>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
             <button class="cancel-edit-btn btn" data-timestamp="${timestamp}" style="background:var(--bg-input); color:var(--text-primary);">Cancel</button>
@@ -482,7 +386,8 @@ function cancelNoteEdit(timestamp) {
     if (noteDiv) {
         const contentDiv = noteDiv.querySelector('.note-content');
         contentDiv.innerHTML = `<div id="pre">${noteObject.text}</div>`;
-        noteDiv.querySelector('.entry-actions').style.display = 'flex';
+        noteDiv.querySelector('.edit-note-btn').style.display = 'flex';
+        noteDiv.querySelector('.delete-note-btn').style.display = 'flex';
     }
 }
 
@@ -492,13 +397,22 @@ async function saveNoteEdit(timestamp) {
         const noteDiv = document.getElementById(`entry-${timestamp}`);
         const newText = noteDiv.querySelector('textarea').value;
         noteObject.text = newText;
-        await DBHelper.updateNote(noteObject);
+        await DBHelper.saveCurrentSession();
+        // Just revert the single item instead of re-rendering the whole list
         cancelNoteEdit(timestamp);
     }
 }
 
 // --- Helper Functions ---
-function getUniqueZipFilename(zip, baseName, extension) { /* ... unchanged ... */ let finalName = `${baseName}${extension}`; let counter = 1; while (zip.file(finalName)) { finalName = `${baseName} (${counter})${extension}`; counter++; } return finalName; }
+function getUniqueZipFilename(zip, baseName, extension) {
+    let finalName = `${baseName}${extension}`;
+    let counter = 1;
+    while (zip.file(finalName)) {
+        finalName = `${baseName} (${counter})${extension}`;
+        counter++;
+    }
+    return finalName;
+}
 
 async function downloadAllAsZip() {
     if (filteredCaptures.length === 0) return alert("No items to download in the current view!");
@@ -506,21 +420,13 @@ async function downloadAllAsZip() {
     downloadButton.querySelector('span').textContent = "Zipping...";
     try {
         const zip = new JSZip();
-        // Fetch full data for all items in the filtered view just for the export
-        const fetchPromises = filteredCaptures.map(item => {
-            if (item.type === 'note') return DBHelper.getNote(item.timestamp);
-            if (item.type === 'capture') return DBHelper.getCapture(item.timestamp);
-            return Promise.resolve(null);
-        });
-        const fullItems = (await Promise.all(fetchPromises)).filter(Boolean);
-
-        for (const item of fullItems) {
+        for (const item of filteredCaptures) {
             const timestampStr = getFormattedTimestamp(new Date(item.timestamp));
             if (item.type === 'note') {
                 const baseName = `${timestampStr}_note`;
                 const fileName = getUniqueZipFilename(zip, baseName, '.txt');
                 zip.file(fileName, item.text);
-            } else if (item.type === 'capture') {
+            } else {
                 const videoBaseName = `${timestampStr}_video`;
                 const videoFileName = getUniqueZipFilename(zip, videoBaseName, '.webm');
                 zip.file(videoFileName, item.videoChunkBase64.split(',')[1], { base64: true });
@@ -547,61 +453,3 @@ function recordVideoChunk(stream, duration) { return new Promise((resolve, rejec
 function recordAudioChunk(stream, duration) { return new Promise((resolve, reject) => { const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' }); const chunks = []; recorder.ondataavailable = e => chunks.push(e.data); recorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm' })); recorder.onerror = e => reject(e.error); recorder.start(); setTimeout(() => recorder.stop(), duration); }); }
 const blobToBase64 = blob => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(blob); reader.onloadend = () => resolve(reader.result); reader.onerror = error => reject(error); });
 function getFormattedTimestamp(date) { const YYYY = date.getFullYear(); const MM = String(date.getMonth() + 1).padStart(2, '0'); const DD = String(date.getDate()).padStart(2, '0'); const hh = String(date.getHours()).padStart(2, '0'); const mm = String(date.getMinutes()).padStart(2, '0'); const ss = String(date.getSeconds()).padStart(2, '0'); return `${YYYY}-${MM}-${DD}_${hh}-${mm}-${ss}`; }
-
-// --- Data Migration Logic ---
-async function checkForOldData() {
-    try {
-        const dbs = await indexedDB.databases();
-        if (dbs.some(db => db.name === 'UsabilitySessionsDB')) {
-            migrateDataButton.style.display = 'inline-flex';
-        }
-    } catch (e) {
-        console.warn("Could not check for old databases. Browser might not support indexedDB.databases().");
-    }
-}
-
-migrateDataButton.addEventListener('click', async () => {
-    if (!confirm("This will migrate data from the old app version. The old data will not be deleted. Continue?")) return;
-
-    migrateDataButton.disabled = true;
-    migrateDataButton.querySelector('span').textContent = 'Migrating...';
-    
-    try {
-        const oldDBRequest = indexedDB.open('UsabilitySessionsDB', 1);
-        oldDBRequest.onsuccess = async (event) => {
-            const oldDB = event.target.result;
-            const transaction = oldDB.transaction(['sessions'], 'readonly');
-            const store = transaction.objectStore('sessions');
-            const getAllRequest = store.getAll();
-
-            getAllRequest.onsuccess = async () => {
-                const oldSessions = getAllRequest.result;
-                for (const oldSession of oldSessions) {
-                    const newSession = { id: oldSession.id, itemIds: [] };
-                    const itemPromises = [];
-
-                    for (const item of oldSession.captures) {
-                        newSession.itemIds.push(item.timestamp);
-                        if (item.type === 'note') {
-                            itemPromises.push(DBHelper.addNote(item));
-                        } else if (item.type === 'capture') {
-                            itemPromises.push(DBHelper.addCapture(item));
-                        }
-                    }
-                    itemPromises.push(DBHelper.addSession(newSession));
-                    await Promise.all(itemPromises);
-                }
-                alert("Migration successful! Refreshing the page.");
-                location.reload();
-            };
-            getAllRequest.onerror = (e) => { throw new Error("Could not read old session data."); };
-        };
-        oldDBRequest.onerror = (e) => { throw new Error("Could not open old database."); };
-
-    } catch (error) {
-        console.error("Migration failed:", error);
-        alert("Migration failed. Check the console for details.");
-        migrateDataButton.disabled = false;
-        migrateDataButton.querySelector('span').textContent = 'Migrate Old Data';
-    }
-});
