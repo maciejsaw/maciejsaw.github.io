@@ -135,6 +135,9 @@ function setupRecordingView(headerText) {
     updateRecordingViewUI(false);
     renderTimeline();
     showView('recordingView');
+    filterControls.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+    });
 }
 
 function updateRecordingViewUI(isRecordingNow) {
@@ -318,8 +321,14 @@ function applyFilter() {
 }
 
 filterControls.addEventListener('click', (e) => {
-    if (e.target.classList.contains('filter-btn')) {
-        currentFilter = e.target.dataset.filter;
+    // Use .closest() to ensure we get the button even if an icon inside it is clicked
+    const clickedButton = e.target.closest('.filter-btn'); 
+
+    if (clickedButton) {
+        const allFilterButtons = filterControls.querySelectorAll('.filter-btn');
+        allFilterButtons.forEach(btn => btn.classList.remove('active'));
+        clickedButton.classList.add('active');
+        currentFilter = clickedButton.dataset.filter;
         renderTimeline();
     }
 });
