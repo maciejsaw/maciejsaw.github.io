@@ -197,3 +197,24 @@ audio, video { width: 100%; border-radius: 8px; margin-top: 0.5rem; }
 .note-edit-textarea {
     width: 100%;
 }
+
+.video-placeholder {
+    position: relative;
+    width: 100%;
+    height: 0;
+    /* This padding will be set dynamically via JavaScript */
+    background-color: var(--bg-card); /* A light background for the placeholder */
+    border-radius: 8px; /* Match the video's border-radius */
+    overflow: hidden; /* Ensures the video corners are also rounded */
+    margin-top: 0.5rem;
+}
+
+/* The video is positioned to fill the placeholder parent */
+.video-placeholder video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom:0;
+    width: 100%;
+    margin-top: 0; /* Override the default margin */
+}

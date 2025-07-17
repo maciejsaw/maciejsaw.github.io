@@ -174,14 +174,22 @@ sessionList.addEventListener('click', async (e) => {
         if (currentSession) {
             currentSessionId = currentSession.id;
             const itemPromises = currentSession.itemIds.map(async (id) => {
-                // Fetch both, one will be null. This is simpler than knowing the type beforehand.
                 const note = await DBHelper.getNote(id);
                 if (note) return note;
                 const capture = await DBHelper.getCapture(id);
-                if (capture) return { type: 'capture', timestamp: capture.timestamp }; // Only metadata
+                if (capture) {
+                    return {
+                        type: 'capture',
+                        timestamp: capture.timestamp,
+                        videoWidth: capture.videoWidth,
+                        videoHeight: capture.videoHeight
+                    };
+                }
                 return null;
             });
             allCaptures = (await Promise.all(itemPromises)).filter(Boolean).sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            currentFilter = 'all';
 
             setupRecordingView(`Session: ${new Date(currentSession.id).toLocaleString()}`);
         }
@@ -287,7 +295,55 @@ async function stopRecording() {
     updateRecordingViewUI(false);
 }
 
-async function performCapture() { /* ... unchanged ... */ if (!tabStream || !micStream) return; const frequency = parseInt(frequencySelect.value, 10); const [videoBlob, micAudioBlob] = await Promise.all([recordVideoChunk(tabStream, frequency), recordAudioChunk(new MediaStream(micStream.getAudioTracks()), frequency)]); const [videoChunkBase64, micAudioBase64] = await Promise.all([blobToBase64(videoBlob), blobToBase64(micAudioBlob)]); const timestamp = getUniqueTimestamp(new Date()); const capture = { type: 'capture', timestamp, videoChunkBase64, micAudioBase64 }; await DBHelper.addCapture(capture); currentSession.itemIds.push(timestamp); await DBHelper.saveSession(currentSession); const captureMeta = { type: 'capture', timestamp: capture.timestamp }; allCaptures.push(captureMeta); allCaptures.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp)); applyFilter(); if (currentFilter === 'all' || currentFilter === 'annotated') { createTimelineEntry(captureMeta); } }
+async function performCapture() {
+    if (!tabStream || !micStream) return;
+    const frequency = parseInt(frequencySelect.value, 10);
+    
+    const videoTrack = tabStream.getVideoTracks()[0];
+    const videoSettings = videoTrack.getSettings();
+
+    const [videoBlob, micAudioBlob] = await Promise.all([
+        recordVideoChunk(tabStream, frequency),
+        recordAudioChunk(new MediaStream(micStream.getAudioTracks()), frequency)
+    ]);
+    
+    const [videoChunkBase64, micAudioBase64] = await Promise.all([
+        blobToBase64(videoBlob),
+        blobToBase64(micAudioBlob)
+    ]);
+    
+    const timestamp = getUniqueTimestamp(new Date());
+    
+    const capture = {
+        type: 'capture',
+        timestamp,
+        videoChunkBase64,
+        micAudioBase64,
+        videoWidth: videoSettings.width,
+        videoHeight: videoSettings.height
+    };
+
+    await DBHelper.addCapture(capture);
+    
+    currentSession.itemIds.push(timestamp);
+    await DBHelper.saveSession(currentSession);
+    
+    const captureMeta = {
+        type: 'capture',
+        timestamp: capture.timestamp,
+        videoWidth: capture.videoWidth,
+        videoHeight: capture.videoHeight
+    };
+    
+    allCaptures.push(captureMeta);
+    allCaptures.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    applyFilter();
+
+    if (currentFilter === 'all' || currentFilter === 'annotated') {
+        createTimelineEntry(captureMeta);
+    }
+}
 
 // --- Timeline Rendering and Filtering ---
 function applyFilter() {
@@ -385,7 +441,9 @@ function createTimelineEntry(item, nextSiblingElement = null) {
                     </div>
                 </div>
                 <div class="note-content"><div id="pre">${item.text}</div></div>`;
+            entryDiv.innerHTML = content;
             break;
+
         case 'capture': default:
             entryDiv.className = 'capture-entry';
             entryDiv.dataset.timestamp = item.timestamp;
@@ -396,16 +454,41 @@ function createTimelineEntry(item, nextSiblingElement = null) {
                         <i class="fa-solid fa-file-circle-plus"></i>
                    </button>
                 </div>
-                <video controls></video>
+                <div class="video-container-target"></div>
                 <div class="mic-audio-label"><i class="fa-solid fa-microphone"></i> <span>Microphone Audio</span></div>
                 <audio controls></audio>`;
+            
+            entryDiv.innerHTML = content;
+
+            const videoContainerTarget = entryDiv.querySelector('.video-container-target');
+            if (videoContainerTarget) {
+                let aspectRatio;
+                if (item.videoWidth && item.videoHeight) {
+                    aspectRatio = (item.videoHeight / item.videoWidth) * 100;
+                } else {
+                    aspectRatio = (9 / 16) * 100; // 56.25% for 16:9
+                }
+
+                const videoPlaceholder = document.createElement('div');
+                videoPlaceholder.className = 'video-placeholder';
+                videoPlaceholder.style.paddingBottom = `${aspectRatio}%`;
+
+                const videoEl = document.createElement('video');
+                videoEl.controls = true;
+                videoPlaceholder.appendChild(videoEl);
+
+                videoContainerTarget.replaceWith(videoPlaceholder);
+            }
+            
             lazyLoadObserver.observe(entryDiv);
             break;
     }
-    entryDiv.innerHTML = content;
     
-    if (nextSiblingElement) { outputContainer.insertBefore(entryDiv, nextSiblingElement); } 
-    else { outputContainer.appendChild(entryDiv); }
+    if (nextSiblingElement) {
+        outputContainer.insertBefore(entryDiv, nextSiblingElement);
+    } else {
+        outputContainer.appendChild(entryDiv);
+    }
 }
 
 // --- Note Action Logic ---
