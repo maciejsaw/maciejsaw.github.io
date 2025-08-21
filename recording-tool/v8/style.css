@@ -1,0 +1,238 @@
+/* --- GLOBAL STYLES & THEME --- */
+:root {
+    --bg-main: #F7F7F8;
+    --bg-card: #FFFFFF;
+    --bg-input: #F1F1F2;
+    --bg-button-dark: #111827;
+    --bg-button-dark-hover: #374151;
+    --bg-note: #FEFBEB;
+    --border-color: #E5E7EB;
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --accent-yellow: #FBBF24;
+    --accent-red: #FEE2E2;
+    --accent-red-text: #DC2626;
+    --accent-blue: #3B82F6;
+}
+
+html, body { height: 100%; }
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    background-color: var(--bg-main); 
+    color: var(--text-primary); 
+    margin: 0; 
+    line-height: 1.5; 
+    box-sizing: border-box; 
+}
+
+/* --- GENERAL UI ELEMENTS --- */
+.view { display: none; height: 100%; }
+.view.active { display: block; }
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 10px 18px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.2s, color 0.2s;
+}
+.btn i { font-size: 0.9rem; }
+
+/* --- SESSION LIST VIEW --- */
+#sessionListView .container { max-width: 800px; margin: auto; padding: 16px; }
+#sessionListView header {border: none; padding-bottom: 1rem; margin-bottom: 2rem; }
+#sessionListView header h1 { font-size: 1.6rem; }
+#sessionListView header p { font-size: 1.1rem; color: var(--text-secondary);}
+#sessionListView .session-list-controls { margin-bottom: 2rem; }
+#newSessionButton { background-color: var(--bg-button-dark); color: white; }
+#newSessionButton:hover { background-color: var(--bg-button-dark-hover); }
+
+#sessionList { list-style: none; padding: 0; }
+.session-item {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+.session-item-info strong { display: block; font-size: 1rem; font-weight: 600; }
+.session-item-info span { font-size: 0.875rem; color: var(--text-secondary); }
+.session-item-actions { display: flex; gap: 0.5rem; }
+.open-btn { background-color: var(--bg-input); color: var(--text-primary); }
+.delete-btn { background-color: var(--accent-red); color: var(--accent-red-text); }
+
+
+/* --- RECORDING VIEW (2-COLUMN LAYOUT) --- */
+#recordingView .container { max-width: none; height: 100%; padding: 0; }
+.two-column-layout { display: flex; height: 100%; gap: 0px; }
+.left-column {
+    flex: 0 0 320px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border-color);
+    border-radius: 0px;
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    row-gap: 20px;
+}
+.right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--bg-card);
+    border-radius: 0px;
+}
+
+/* Left Column Content */
+.left-column .back-link { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; }
+.left-column .controls-header { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin: 1rem 0 0 0; }
+
+.left-column .controls-section { display: flex; flex-direction: column; gap: 12px; }
+.left-column .config-item { display: flex; align-items: center; justify-content: space-between; }
+.left-column .config-item label { font-weight: 500; font-size: 0.9rem; }
+.left-column select, .left-column textarea {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+textarea {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.left-column #startButton, .left-column #stopButton, .left-column #addNoteButton {
+    width: 100%;
+    background-color: var(--bg-button-dark);
+    color: white;
+}
+.left-column #stopButton { background-color: #DC2626; }
+.left-column #noteInputContainer { display: flex; flex-direction: column; gap: 0.5rem;}
+
+/* Right Column Content */
+.right-column-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem 0.5rem; flex-shrink: 0; }
+.right-column-header h1 { font-size: 1rem; margin: 0; }
+.right-column-header #downloadButton { background-color: var(--bg-button-dark); color: white; }
+
+.filter-controls {
+    display: flex;
+    justify-content: flex-start;
+    gap: 1rem;
+    padding: 0 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+    flex-shrink: 0;
+}
+.filter-btn {
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 1rem 0.5rem;
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+}
+.filter-btn.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--bg-button-dark);
+}
+
+#output {
+    padding: 1.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: var(--bg-main);
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.capture-entry, .note-entry {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    margin-bottom: 0;
+}
+
+.capture-entry {
+    flex-grow: 0;
+    flex-shrink: 1;
+    flex-basis: 60%;
+    min-width: 350px;
+}
+.note-entry {
+    flex-grow: 0.3;
+    flex-shrink: 1;
+    flex-basis: 25%;
+}
+.note-entry { background-color: var(--bg-note); border-color: var(--accent-yellow); border-left: 4px solid var(--accent-yellow); }
+
+.entry-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.entry-header-title { display: flex; align-items: center; gap: 0.75rem; font-weight: 600; }
+.entry-header-title i { color: var(--text-secondary); }
+.entry-header-time { font-size: 0.875rem; color: var(--text-secondary); }
+.entry-actions { display: flex; align-items: center; gap: 0.25rem; }
+.icon-btn { background: none; color: var(--text-secondary); padding: 5px; }
+.icon-btn:hover { color: var(--text-primary); }
+.delete-note-btn:hover { color: var(--accent-red-text); }
+audio, video { width: 100%; border-radius: 8px; margin-top: 0.5rem; }
+.mic-audio-label { font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; }
+.mic-audio-label i { color: var(--text-secondary); }
+#video-preview { display: none; }
+
+/* Split-screen preview area (fills the right column when active) */
+.split-preview {
+    display: none;         /* toggled by JS */
+    flex: 1;               /* fill remaining right-column height */
+    padding: 1rem;
+    background: var(--bg-main);
+}
+.split-preview #video-preview {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    border-radius: 12px;
+    object-fit: contain;
+    margin-top: 0;
+}
+
+.note-edit-textarea {
+    width: 100%;
+}
+
+.video-placeholder {
+    position: relative;
+    width: 100%;
+    height: 0;
+    /* This padding will be set dynamically via JavaScript */
+    background-color: var(--bg-card); /* A light background for the placeholder */
+    border-radius: 8px; /* Match the video's border-radius */
+    overflow: hidden; /* Ensures the video corners are also rounded */
+    margin-top: 0.5rem;
+}
+
+/* The video is positioned to fill the placeholder parent */
+.video-placeholder video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom:0;
+    width: 100%;
+    margin-top: 0; /* Override the default margin */
+}
