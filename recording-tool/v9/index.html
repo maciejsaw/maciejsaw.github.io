@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usability Test Recorder</title>
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Local Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="sessionListView" class="view active">
+        <div class="container">
+            <header>
+                <h1>Usability Test Recorder</h1>
+                <p>Record and annotate your usability testing interviews</p>
+            </header>
+            <div class="session-list-controls">
+                <button id="newSessionButton" class="btn"><i class="fa-solid fa-plus"></i><span>Start New Session</span></button>
+                <!-- ADDED: This button will be shown/hidden by the script -->
+                <button id="migrateDataButton" class="btn" style="display: none; background-color: var(--accent-blue);"><i class="fa-solid fa-database"></i><span>Migrate Old Data</span></button>
+            </div>
+            <ul id="sessionList"></ul>
+        </div>
+    </div>
+
+    <!-- The rest of the HTML is unchanged -->
+    <div id="recordingView" class="view">
+        <div class="container">
+            <div class="two-column-layout">
+                <div class="left-column">
+                    <div class="back-and-title">
+                        <a href="#" id="backButton" class="back-link"><i class="fa-solid fa-arrow-left"></i><span>Back to Sessions</span></a>
+                        <div id="recordingTitleContainer">
+                            <div class="title-row">
+                                <h1 id="recordingViewHeader"></h1>
+                                <button id="editSessionTitleBtn" class="icon-btn btn" title="Rename session">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </button>
+                            </div>
+                            <div id="sessionTitleEdit" class="session-title-edit" style="display:none;">
+                                <input type="text" id="sessionTitleInput" />
+                                <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+                                    <button id="saveSessionTitleBtn" class="btn" style="background:var(--bg-button-dark); color:white;">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls-section">
+                        <h2 class="controls-header">Recording Controls</h2>
+                        <select id="frequencySelect">
+                            <option value="120000">120-seconds segments</option>
+                            <option value="60000">60-seconds segments</option>
+                            <option value="40000">40-seconds segments</option>
+                            <option value="30000">30-seconds segments</option>
+                            <option value="20000" selected>20-seconds segments</option>
+                            <option value="10000">10-seconds segments</option>
+                            <option value="5000">5-seconds segments</option>
+                            <option value="2000">2-seconds segments</option>
+                        </select>
+                         <button id="startButton" class="btn"><i class="fa-solid fa-circle-play"></i><span>Start Recording</span></button>
+                        <button id="stopButton" class="btn" style="display: none;"><i class="fa-solid fa-circle-stop"></i><span>Stop Recording</span></button>
+                        <!-- Split-screen toggle (shown only while recording) -->
+                        <button id="toggleSplitButton" class="btn" style="display: none;"><i class="fa-solid fa-columns"></i><span>Split-screen preview</span></button>
+                    </div>
+                    <div class="controls-section">
+                        <h2 class="controls-header">Add Note</h2>
+                        <div id="noteInputContainer">
+                            <textarea id="noteInput" rows="3" placeholder="Add a note about what's happening..."></textarea>
+                            <button id="addNoteButton" class="btn"><i class="fa-solid fa-plus"></i><span>Add Note</span></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="right-column">
+                    <!-- Live preview container (replaces the right side while active) -->
+                    <div id="splitPreviewContainer" class="split-preview">
+                        <!-- The #video-preview element is moved here dynamically -->
+                    </div>
+
+                    <div id="filterControlsContainer">
+                        <div class="filter-controls">
+                            <div class="filter-tabs">
+                                <button class="filter-btn btn active" data-filter="all">All</button>
+                                <button class="filter-btn btn" data-filter="annotated">Annotated</button>
+                                <button class="filter-btn btn" data-filter="notes">Notes</button>
+                            </div>
+                            <button id="downloadButton" class="btn"><i class="fa-solid fa-download"></i><span>Download ZIP</span></button>
+                        </div>
+                    </div>
+                    <div id="output"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <video id="video-preview" autoplay muted></video>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
