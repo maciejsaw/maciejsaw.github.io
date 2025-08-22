@@ -307,36 +307,32 @@ function getUniqueTimestamp(initialDate) {
 
 async function submitNote() {
     const text = noteInput.value.trim();
-    if (text) {
-        const uniqueTimestamp = getUniqueTimestamp(new Date());
-        const note = { type: 'note', timestamp: uniqueTimestamp, text: text };
-        
-        await DBHelper.addNote(note);
-        currentSession.itemIds.push(note.timestamp);
-        await DBHelper.saveSession(currentSession);
-        
-        allCaptures.push(note);
-        allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        applyFilter();
+    const uniqueTimestamp = getUniqueTimestamp(new Date());
+    const note = { type: 'note', timestamp: uniqueTimestamp, text };
 
-        const noteIndex = allCaptures.findIndex(c => c.timestamp === uniqueTimestamp);
-        const nextItem = allCaptures[noteIndex + 1];
-        const nextSiblingElement = nextItem ? document.getElementById(`entry-${nextItem.timestamp}`) : null;
+    await DBHelper.addNote(note);
+    currentSession.itemIds.push(note.timestamp);
+    await DBHelper.saveSession(currentSession);
 
-        if (currentFilter === 'all' || currentFilter === 'notes' || currentFilter === 'annotated') {
-             createTimelineEntry(note, nextSiblingElement);
-             
-             // Find the newly created element by its ID
-             const newNoteElement = document.getElementById(`entry-${note.timestamp}`);
-             if (newNoteElement) {
-                // Scroll it into view with a smooth animation
-                newNoteElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-             }
+    allCaptures.push(note);
+    allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    applyFilter();
+
+    const noteIndex = allCaptures.findIndex(c => c.timestamp === uniqueTimestamp);
+    const nextItem = allCaptures[noteIndex + 1];
+    const nextSiblingElement = nextItem ? document.getElementById(`entry-${nextItem.timestamp}`) : null;
+
+    if (currentFilter === 'all' || currentFilter === 'notes' || currentFilter === 'annotated') {
+        createTimelineEntry(note, nextSiblingElement);
+        // Find the newly created element by its ID and scroll into view
+        const newNoteElement = document.getElementById(`entry-${note.timestamp}`);
+        if (newNoteElement) {
+            newNoteElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-        
-        noteInput.value = '';
-        noteInput.focus();
     }
+
+    noteInput.value = '';
+    noteInput.focus();
 }
 
 async function startRecording() {
