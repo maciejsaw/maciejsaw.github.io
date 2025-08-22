@@ -79,11 +79,11 @@ body {
     background: var(--bg-card);
     border-right: 1px solid var(--border-color);
     border-radius: 0px;
-    padding: 1.5rem;
+    padding: 1.2rem 1.5rem;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    row-gap: 20px;
+    row-gap: 32px;
 }
 .right-column {
     flex: 1;
@@ -95,11 +95,18 @@ body {
 }
 
 /* Left Column Content */
-.left-column .back-link { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; }
-.left-column .controls-header { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin: 1rem 0 0 0; }
+.left-column .back-link { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+.left-column .back-and-title { display: flex; flex-direction: column; row-gap: 4px; }
+.left-column .controls-header { 
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 1rem 0 0 0;}
 
-.left-column .controls-section { display: flex; flex-direction: column; gap: 12px; }
-.left-column .config-item { display: flex; align-items: center; justify-content: space-between; }
+/* Keep the recording header style consistent after moving it to the left sidebar */
+.left-column #recordingViewHeader { font-size: 1rem; margin: 0; }
+
+.left-column .controls-section { display: flex; flex-direction: column; gap: 8px; }
+.left-column .config-item { display: flex; align-items: center; justify-content: space-between; color: var(--text-secondary)}
 .left-column .config-item label { font-weight: 500; font-size: 0.9rem; }
 .left-column select, .left-column textarea {
     background-color: var(--bg-input);
@@ -118,30 +125,33 @@ textarea {
     color: white;
 }
 .left-column #stopButton { background-color: #DC2626; }
-.left-column #noteInputContainer { display: flex; flex-direction: column; gap: 0.5rem;}
+.left-column #noteInputContainer { display: flex; flex-direction: column; gap: 8px;}
 
 /* Right Column Content */
 .right-column-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem 0.5rem; flex-shrink: 0; }
 .right-column-header h1 { font-size: 1rem; margin: 0; }
-.right-column-header #downloadButton { background-color: var(--bg-button-dark); color: white; }
+
+/* Ensure download button retains styling in its new position */
+#downloadButton { background-color: var(--bg-button-dark); color: white; }
 
 .filter-controls {
     display: flex;
-    justify-content: flex-start;
-    gap: 1rem;
+    justify-content: space-between;
+    align-items: center;
     padding: 0 1.5rem;
     border-bottom: 1px solid var(--border-color);
     background-color: var(--bg-card);
     flex-shrink: 0;
 }
+.filter-controls .filter-tabs { display: flex; gap: 1rem; }
 .filter-btn {
     font-size: 0.9rem;
     font-weight: 600;
-    padding: 1rem 0.5rem;
+    padding: 1.3rem 0.5rem;
     background-color: transparent;
     color: var(--text-secondary);
     border: none;
-    border-bottom: 2px solid transparent;
+    border-bottom: 3px solid transparent;
     border-radius: 0;
 }
 .filter-btn.active {

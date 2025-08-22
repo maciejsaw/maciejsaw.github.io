@@ -163,7 +163,7 @@ function setSplitScreen(active) {
 
     if (active) {
         // Hide normal right-column content
-        rightColumnHeader.style.display = 'none';
+        if (rightColumnHeader) rightColumnHeader.style.display = 'none';
         filterControlsContainer.style.display = 'none';
         outputContainer.style.display = 'none';
 
@@ -182,7 +182,7 @@ function setSplitScreen(active) {
     } else {
         // Hide preview and restore normal UI
         splitPreviewContainer.style.display = 'none';
-        rightColumnHeader.style.display = 'flex';
+        if (rightColumnHeader) rightColumnHeader.style.display = 'flex';
         filterControlsContainer.style.display = 'block';
         outputContainer.style.display = 'flex';
 
