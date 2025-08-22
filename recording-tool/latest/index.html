@@ -34,7 +34,20 @@
                 <div class="left-column">
                     <div class="back-and-title">
                         <a href="#" id="backButton" class="back-link"><i class="fa-solid fa-arrow-left"></i><span>Back to Sessions</span></a>
-                        <h1 id="recordingViewHeader"></h1>
+                        <div id="recordingTitleContainer">
+                            <div class="title-row">
+                                <h1 id="recordingViewHeader"></h1>
+                                <button id="editSessionTitleBtn" class="icon-btn btn" title="Rename session">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </button>
+                            </div>
+                            <div id="sessionTitleEdit" class="session-title-edit" style="display:none;">
+                                <input type="text" id="sessionTitleInput" />
+                                <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+                                    <button id="saveSessionTitleBtn" class="btn" style="background:var(--bg-button-dark); color:white;">Save</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="controls-section">
                         <h2 class="controls-header">Recording Controls</h2>

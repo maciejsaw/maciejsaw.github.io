@@ -104,6 +104,16 @@ body {
 
 /* Keep the recording header style consistent after moving it to the left sidebar */
 .left-column #recordingViewHeader { font-size: 1rem; margin: 0; }
+.left-column #recordingTitleContainer .title-row { display: flex; align-items: center; gap: 8px; }
+.session-title-edit input[type="text"] {
+    width: 100%;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
 
 .left-column .controls-section { display: flex; flex-direction: column; gap: 8px; }
 .left-column .config-item { display: flex; align-items: center; justify-content: space-between; color: var(--text-secondary)}

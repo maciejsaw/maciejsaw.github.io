@@ -20,6 +20,11 @@ const toggleSplitButton = document.getElementById('toggleSplitButton');
 const splitPreviewContainer = document.getElementById('splitPreviewContainer');
 const rightColumnHeader = document.querySelector('.right-column-header');
 const filterControlsContainer = document.getElementById('filterControlsContainer');
+// Session title editing controls
+const editSessionTitleBtn = document.getElementById('editSessionTitleBtn');
+const sessionTitleEdit = document.getElementById('sessionTitleEdit');
+const sessionTitleInput = document.getElementById('sessionTitleInput');
+const saveSessionTitleBtn = document.getElementById('saveSessionTitleBtn');
 
 // --- State Variables ---
 let tabStream, micStream, captureInterval;
@@ -116,7 +121,7 @@ async function showSessionList() {
             li.dataset.id = session.id;
             li.innerHTML = `
                 <div class="session-item-info">
-                    <strong>Session from ${new Date(session.id).toLocaleString()}</strong>
+                    <strong>${session.title ? session.title : `Session from ${new Date(session.id).toLocaleString()}`}</strong>
                     <span>${session.itemIds.length} items</span>
                 </div>
                 <div class="session-item-actions">
@@ -137,7 +142,14 @@ window.addEventListener('load', async () => {
 });
 
 function setupRecordingView(headerText) {
-    recordingViewHeader.textContent = headerText;
+    // Prefer session title if present
+    const header = currentSession?.title || headerText || `Session from ${new Date(currentSession?.id ?? Date.now()).toLocaleString()}`;
+    recordingViewHeader.textContent = header;
+    // Reset edit UI state
+    if (sessionTitleEdit) sessionTitleEdit.style.display = 'none';
+    const titleRow = document.querySelector('#recordingTitleContainer .title-row');
+    if (titleRow) titleRow.style.display = 'flex';
+    if (sessionTitleInput) sessionTitleInput.value = header;
     updateRecordingViewUI(false);
     renderTimeline();
     showView('recordingView');
@@ -194,10 +206,11 @@ function setSplitScreen(active) {
 // --- Navigation & Event Listeners ---
 newSessionButton.addEventListener('click', async () => {
     currentSessionId = Date.now();
-    currentSession = { id: currentSessionId, itemIds: [] };
+    const defaultTitle = `Session from ${new Date(currentSessionId).toLocaleString()}`;
+    currentSession = { id: currentSessionId, itemIds: [], title: defaultTitle };
     allCaptures = [];
     await DBHelper.addSession(currentSession);
-    setupRecordingView(`Session: ${new Date().toLocaleString()}`);
+    setupRecordingView();
 });
 
 sessionList.addEventListener('click', async (e) => {
@@ -235,7 +248,7 @@ sessionList.addEventListener('click', async (e) => {
 
             currentFilter = 'all';
 
-            setupRecordingView(`Session: ${new Date(currentSession.id).toLocaleString()}`);
+            setupRecordingView();
         }
     }
 });
@@ -248,6 +261,40 @@ addNoteButton.addEventListener('click', submitNote);
 // Toggle split-screen on click
 toggleSplitButton.addEventListener('click', () => setSplitScreen(!isSplitActive));
 noteInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitNote(); } });
+
+// --- Session Title Editing ---
+if (editSessionTitleBtn && sessionTitleEdit && sessionTitleInput && saveSessionTitleBtn) {
+    editSessionTitleBtn.addEventListener('click', () => {
+        const titleRow = document.querySelector('#recordingTitleContainer .title-row');
+        if (titleRow) titleRow.style.display = 'none';
+        sessionTitleEdit.style.display = 'block';
+        sessionTitleInput.value = recordingViewHeader.textContent || '';
+        // Autofocus and select all text
+        setTimeout(() => { sessionTitleInput.focus(); sessionTitleInput.select(); }, 0);
+    });
+
+    saveSessionTitleBtn.addEventListener('click', async () => {
+        const newTitle = (sessionTitleInput.value || '').trim();
+        const finalTitle = newTitle || `Session from ${new Date(currentSession?.id ?? Date.now()).toLocaleString()}`;
+        if (currentSession) {
+            currentSession.title = finalTitle;
+            await DBHelper.saveSession(currentSession);
+        }
+        recordingViewHeader.textContent = finalTitle;
+        sessionTitleEdit.style.display = 'none';
+        const titleRow = document.querySelector('#recordingTitleContainer .title-row');
+        if (titleRow) titleRow.style.display = 'flex';
+        // Update list in background so when returning it's refreshed
+        // (non-blocking; will refresh on back anyway)
+    });
+
+    sessionTitleInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveSessionTitleBtn.click();
+        }
+    });
+}
 
 // --- Core Recording & Data Logic ---
 function getUniqueTimestamp(initialDate) {
