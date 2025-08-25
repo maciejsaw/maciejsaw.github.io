@@ -2,7 +2,6 @@
 const sessionListView = document.getElementById('sessionListView');
 const recordingView = document.getElementById('recordingView');
 const newSessionButton = document.getElementById('newSessionButton');
-const migrateDataButton = document.getElementById('migrateDataButton');
 const sessionList = document.getElementById('sessionList');
 const startButton = document.getElementById('startButton');
 const stopButton = document.getElementById('stopButton');
@@ -140,7 +139,6 @@ async function showSessionList() {
 window.addEventListener('load', async () => {
     await DBHelper.init();
     await showSessionList();
-    await checkForOldData();
     // Apply saved theme
     applySavedTheme();
 });
@@ -641,67 +639,4 @@ function recordAudioChunk(stream, duration) { return new Promise((resolve, rejec
 const blobToBase64 = blob => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(blob); reader.onloadend = () => resolve(reader.result); reader.onerror = error => reject(error); });
 function getFormattedTimestamp(date) { const YYYY = date.getFullYear(); const MM = String(date.getMonth() + 1).padStart(2, '0'); const DD = String(date.getDate()).padStart(2, '0'); const hh = String(date.getHours()).padStart(2, '0'); const mm = String(date.getMinutes()).padStart(2, '0'); const ss = String(date.getSeconds()).padStart(2, '0'); return `${YYYY}-${MM}-${DD}_${hh}-${mm}-${ss}`; }
 
-// --- Data Migration Logic ---
-async function checkForOldData() {
-    try {
-        const migrationFlag = localStorage.getItem('migrationV1toV2Completed');
-        if (migrationFlag) return; // Don't show button if already migrated
-
-        const dbs = await indexedDB.databases();
-        if (dbs.some(db => db.name === 'UsabilitySessionsDB')) {
-            migrateDataButton.style.display = 'inline-flex';
-        }
-    } catch (e) {
-        console.warn("Could not check for old databases. Browser might not support indexedDB.databases().");
-    }
-}
-
-migrateDataButton.addEventListener('click', async () => {
-    if (!confirm("This will migrate data from the old app version to the new, faster format. The old data will not be deleted. Continue?")) return;
-
-    migrateDataButton.disabled = true;
-    migrateDataButton.querySelector('span').textContent = 'Migrating...';
-    
-    try {
-        const oldDBRequest = indexedDB.open('UsabilitySessionsDB', 1);
-        oldDBRequest.onsuccess = async (event) => {
-            const oldDB = event.target.result;
-            const transaction = oldDB.transaction(['sessions'], 'readonly');
-            const store = transaction.objectStore('sessions');
-            const getAllRequest = store.getAll();
-
-            getAllRequest.onsuccess = async () => {
-                const oldSessions = getAllRequest.result;
-                for (const oldSession of oldSessions) {
-                    const newSession = { id: oldSession.id, itemIds: [] };
-                    const itemPromises = [];
-
-                    for (const item of oldSession.captures) {
-                        newSession.itemIds.push(item.timestamp);
-                        if (item.type === 'note') {
-                            itemPromises.push(DBHelper.addNote(item));
-                        } else if (item.type === 'capture') {
-                            itemPromises.push(DBHelper.addCapture(item));
-                        }
-                    }
-                    itemPromises.push(DBHelper.addSession(newSession));
-                    await Promise.all(itemPromises);
-                }
-                
-                // MODIFIED: Set flag in localStorage on success
-                localStorage.setItem('migrationV1toV2Completed', 'true');
-                
-                alert("Migration successful! Refreshing the page.");
-                location.reload();
-            };
-            getAllRequest.onerror = (e) => { throw new Error("Could not read old session data."); };
-        };
-        oldDBRequest.onerror = (e) => { throw new Error("Could not open old database."); };
-
-    } catch (error) {
-        console.error("Migration failed:", error);
-        alert("Migration failed. Check the console for details.");
-        migrateDataButton.disabled = false;
-        migrateDataButton.querySelector('span').textContent = 'Migrate Old Data';
-    }
-});
+// (Removed legacy data migration logic)
