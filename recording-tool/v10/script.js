@@ -25,8 +25,6 @@ const editSessionTitleBtn = document.getElementById('editSessionTitleBtn');
 const sessionTitleEdit = document.getElementById('sessionTitleEdit');
 const sessionTitleInput = document.getElementById('sessionTitleInput');
 const saveSessionTitleBtn = document.getElementById('saveSessionTitleBtn');
-// Theme toggle
-const themeToggleButton = document.getElementById('themeToggleButton');
 
 // --- State Variables ---
 let tabStream, micStream, captureInterval;
@@ -141,34 +139,7 @@ window.addEventListener('load', async () => {
     await DBHelper.init();
     await showSessionList();
     await checkForOldData();
-    // Apply saved theme
-    applySavedTheme();
 });
-
-function applySavedTheme() {
-    let saved = localStorage.getItem('utr.theme');
-    if (!saved) {
-        saved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    document.documentElement.classList.toggle('theme-dark', saved === 'dark');
-    updateThemeToggleIcon();
-}
-
-function updateThemeToggleIcon() {
-    if (!themeToggleButton) return;
-    const isDark = document.documentElement.classList.contains('theme-dark');
-    themeToggleButton.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
-    themeToggleButton.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
-    themeToggleButton.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-}
-
-if (themeToggleButton) {
-    themeToggleButton.addEventListener('click', () => {
-        const isDark = document.documentElement.classList.toggle('theme-dark');
-        localStorage.setItem('utr.theme', isDark ? 'dark' : 'light');
-        updateThemeToggleIcon();
-    });
-}
 
 function setupRecordingView(headerText) {
     // Prefer session title if present
@@ -629,7 +600,7 @@ outputContainer.addEventListener('click', async (e) => {
 
 async function addNoteFromCapture(captureTimestamp) { /* ... unchanged ... */ const initialTimestamp = new Date(new Date(captureTimestamp).getTime() + 10); const uniqueTimestamp = getUniqueTimestamp(initialTimestamp); const note = { type: 'note', timestamp: uniqueTimestamp, text: '' }; await DBHelper.addNote(note); currentSession.itemIds.push(note.timestamp); allCaptures.push(note); allCaptures.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); currentSession.itemIds.sort((a, b) => new Date(a) - new Date(b)); await DBHelper.saveSession(currentSession); applyFilter(); const noteIndex = allCaptures.findIndex(c => c.timestamp === uniqueTimestamp); const nextItem = allCaptures[noteIndex + 1]; const nextSiblingElement = nextItem ? document.getElementById(`entry-${nextItem.timestamp}`) : null; if (currentFilter === 'all' || currentFilter === 'notes' || currentFilter === 'annotated') { createTimelineEntry(note, nextSiblingElement); enterEditMode(uniqueTimestamp); } }
 async function deleteNote(timestamp) { /* ... unchanged ... */ if (confirm('Are you sure you want to delete this note?')) { await DBHelper.deleteNoteFromDB(timestamp); const noteIndex = allCaptures.findIndex(c => c.timestamp === timestamp); if (noteIndex > -1) allCaptures.splice(noteIndex, 1); const idIndex = currentSession.itemIds.indexOf(timestamp); if (idIndex > -1) currentSession.itemIds.splice(idIndex, 1); await DBHelper.saveSession(currentSession); applyFilter(); const noteElement = document.getElementById(`entry-${timestamp}`); if (noteElement) noteElement.remove(); } }
-function enterEditMode(timestamp) { /* ... unchanged ... */ const noteDiv = document.getElementById(`entry-${timestamp}`); if (!noteDiv) return; const contentDiv = noteDiv.querySelector('.note-content'); const currentTextEl = contentDiv.querySelector('#pre'); const currentText = currentTextEl ? currentTextEl.innerText : ''; noteDiv.querySelector('.entry-actions').style.display = 'none'; contentDiv.innerHTML = `<textarea class="note-edit-textarea" rows="3">${currentText}</textarea><div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;"><button class="cancel-edit-btn btn" data-timestamp="${timestamp}" style="background:var(--bg-input); color:var(--text-primary);">Cancel</button><button class="save-note-btn btn" data-timestamp="${timestamp}" style="background:var(--bg-button-dark); color:white;">Save Note</button></div>`; const textarea = contentDiv.querySelector('textarea'); textarea.focus(); textarea.select(); }
+function enterEditMode(timestamp) { /* ... unchanged ... */ const noteDiv = document.getElementById(`entry-${timestamp}`); if (!noteDiv) return; const contentDiv = noteDiv.querySelector('.note-content'); const currentTextEl = contentDiv.querySelector('#pre'); const currentText = currentTextEl ? currentTextEl.innerText : ''; noteDiv.querySelector('.entry-actions').style.display = 'none'; contentDiv.innerHTML = `<textarea class="note-edit-textarea" rows="3" style="background: white;">${currentText}</textarea><div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;"><button class="cancel-edit-btn btn" data-timestamp="${timestamp}" style="background:var(--bg-input); color:var(--text-primary);">Cancel</button><button class="save-note-btn btn" data-timestamp="${timestamp}" style="background:var(--bg-button-dark); color:white;">Save Note</button></div>`; const textarea = contentDiv.querySelector('textarea'); textarea.focus(); textarea.select(); }
 function cancelNoteEdit(timestamp) { /* ... unchanged ... */ const noteObject = allCaptures.find(c => c.timestamp === timestamp); if (!noteObject) return; const noteDiv = document.getElementById(`entry-${timestamp}`); if (noteDiv) { const contentDiv = noteDiv.querySelector('.note-content'); contentDiv.innerHTML = `<div id="pre">${noteObject.text}</div>`; noteDiv.querySelector('.entry-actions').style.display = 'flex'; } }
 async function saveNoteEdit(timestamp) { /* ... unchanged ... */ const noteObject = allCaptures.find(c => c.timestamp === timestamp); if (noteObject) { const noteDiv = document.getElementById(`entry-${timestamp}`); const newText = noteDiv.querySelector('textarea').value; noteObject.text = newText; await DBHelper.updateNote(noteObject); cancelNoteEdit(timestamp); } }
 

@@ -2,69 +2,20 @@
 :root {
     --bg-main: #F7F7F8;
     --bg-card: #FFFFFF;
-    --bg-input: #F7F7F8;
+    --bg-input: #F1F1F2;
     --bg-button-dark: #111827;
     --bg-button-dark-hover: #374151;
     --bg-note: #FEFBEB;
-    --border-color: oklch(90% 0.004 264.656);
+    --border-color: #E5E7EB;
     --text-primary: #111827;
     --text-secondary: #6B7280;
-    --accent-yellow: #ffd465;
+    --accent-yellow: #FBBF24;
     --accent-red: #FEE2E2;
     --accent-red-text: #DC2626;
     --accent-blue: #3B82F6;
-    /* Media controls */
-    --media-controls-bg: var(--bg-input);
-    /* Buttons */
-    --danger-bg: #DC2626; /* red-600 */
-    --danger-bg-hover: #B91C1C; /* red-700 */
-    --btn-secondary-bg: var(--bg-input);
-    --btn-secondary-hover-bg: #E5E7EB; /* slightly darker than input */
-    /* Scrollbars */
-    --scrollbar-track: var(--bg-input);
-    --scrollbar-thumb: #cbd5e1; /* slate-300 */
-    --scrollbar-thumb-hover: #94a3b8; /* slate-400 */
-    /* Active accents */
-    --accent-active: var(--bg-button-dark); /* matches dark button in light theme */
-}
-
-/* Dark theme overrides */
-.theme-dark {
-    /* Higher-contrast neutrals */
-    --bg-main: #0b0f14;   /* darkest */
-    --bg-card: #1e242f;   /* card surfaces */
-    --bg-input: #293443;  /* inputs slightly lighter for contrast */
-    /* Neutral buttons in dark mode */
-    --bg-button-dark: #495464; /* neutral gray */
-    --bg-button-dark-hover: #555e6a;
-    /* Dimmed yellow note tints */
-    --bg-note: #39361f; /* dark, warm yellow-brown */
-    --border-color: #334155; /* clearer separation */
-    --text-primary: #e5e7eb;
-    --text-secondary: #94a3b8;
-    --accent-yellow: #836513; /* dimmer yellow */
-    --accent-red: #2b1d20;
-    --accent-red-text: #f87171;
-    --accent-blue: #3B82F6;
-    /* Media controls */
-    --media-controls-bg: #424d5c;
-    /* Buttons */
-    --danger-bg: #7F1D1D; /* darker red suitable for dark */
-    --danger-bg-hover: #991B1B;
-    --btn-secondary-bg: var(--bg-input);
-    --btn-secondary-hover-bg: #2a3648;
-    /* Scrollbars */
-    --scrollbar-track: var(--bg-card);
-    --scrollbar-thumb: #334155; /* slate-700 */
-    --scrollbar-thumb-hover: #475569; /* slate-600 */
-    /* Active accents */
-    --accent-active: var(--text-primary); /* match text color in dark theme */
 }
 
 html, body { height: 100%; }
-/* Global box-sizing reset */
-html { box-sizing: border-box; }
-*, *::before, *::after { box-sizing: inherit; }
 body { 
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
     background-color: var(--bg-main); 
@@ -73,64 +24,6 @@ body {
     line-height: 1.5; 
     box-sizing: border-box; 
 }
-
-/* --- Scrollbar Styling (themed) --- */
-/* Firefox */
-* {
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-}
-/* WebKit */
-*::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-track { background: var(--scrollbar-track); }
-*::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbar-thumb);
-    border-radius: 8px;
-    border: 2px solid var(--scrollbar-track);
-}
-*::-webkit-scrollbar-thumb:hover { background-color: var(--scrollbar-thumb-hover); }
-
-/* Inputs/Textareas/Selects: text and placeholder theming */
-input, textarea, select {
-    color: var(--text-primary);
-    background-color: var(--bg-input);
-    border: 1px solid var(--border-color);
-}
-input::placeholder, textarea::placeholder { color: var(--text-secondary); opacity: 1; }
-/* Vendor placeholders for broader support */
-input::-webkit-input-placeholder, textarea::-webkit-input-placeholder { color: var(--text-secondary); }
-input::-moz-placeholder, textarea::-moz-placeholder { color: var(--text-secondary); }
-input:-ms-input-placeholder, textarea:-ms-input-placeholder { color: var(--text-secondary); }
-
-/* Themed focus states */
-input:focus, textarea:focus, select:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: none;
-}
-/* Ensure no native focus ring sneaks in */
-input:focus-visible, textarea:focus-visible, select:focus-visible { outline: none; }
-
-/* Header row with theme toggle in-line */
-#sessionListView header .header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-/* Theme toggle button (no border) */
-.theme-toggle {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    padding: 8px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-.theme-toggle:hover { color: var(--text-primary); background: var(--bg-input); }
 
 /* --- GENERAL UI ELEMENTS --- */
 .view { display: none; height: 100%; }
@@ -219,7 +112,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: non
     border-radius: 8px;
     padding: 8px 10px;
     font-size: 0.95rem;
-    color: var(--text-primary);
     box-sizing: border-box;
 }
 
@@ -242,15 +134,8 @@ textarea {
     background-color: var(--bg-button-dark);
     color: white;
 }
-.left-column #stopButton { background-color: var(--danger-bg); }
-.left-column #stopButton:hover { background-color: var(--danger-bg-hover); }
+.left-column #stopButton { background-color: #DC2626; }
 .left-column #noteInputContainer { display: flex; flex-direction: column; gap: 8px;}
-
-/* Split-screen: use secondary button style */
-.left-column #toggleSplitButton {
-    background-color: var(--bg-input);
-    color: var(--text-primary);
-}
 
 /* Right Column Content */
 .right-column-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem 0.5rem; flex-shrink: 0; }
@@ -281,7 +166,7 @@ textarea {
 }
 .filter-btn.active {
     color: var(--text-primary);
-    border-bottom-color: var(--accent-active);
+    border-bottom-color: var(--bg-button-dark);
 }
 
 #output {
@@ -330,10 +215,6 @@ audio, video { width: 100%; border-radius: 8px; margin-top: 0.5rem; }
 .mic-audio-label i { color: var(--text-secondary); }
 #video-preview { display: none; }
 
-/* Themed native audio controls (WebKit browsers): background only */
-audio::-webkit-media-controls-enclosure { border-radius: 8px; background: var(--media-controls-bg); }
-audio::-webkit-media-controls-panel { background: var(--media-controls-bg); }
-
 /* Split-screen preview area (fills the right column when active) */
 .split-preview {
     display: none;         /* toggled by JS */
@@ -353,34 +234,6 @@ audio::-webkit-media-controls-panel { background: var(--media-controls-bg); }
 
 .note-edit-textarea {
     width: 100%;
-    background-color: var(--bg-input);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 0.9rem;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-.note-edit-textarea:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: none;
-}
-
-/* --- Strong, centralized focus rule to beat specific selectors --- */
-:root input:focus,
-:root textarea:focus,
-:root select:focus,
-.left-column input:focus,
-.left-column textarea:focus,
-.left-column select:focus,
-.session-title-edit input[type="text"]:focus,
-.note-edit-textarea:focus {
-    outline: none !important;
-    border-color: var(--accent-blue) !important;
-    box-shadow: none;
 }
 
 .video-placeholder {
