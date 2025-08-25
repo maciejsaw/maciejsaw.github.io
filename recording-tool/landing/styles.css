@@ -117,6 +117,10 @@ main > section + section{margin-top:48px}
 .shot{aspect-ratio:16/9;margin:0;width:100%;display:block}
 .shot img{width:100%;height:100%;display:block;object-fit:cover;object-position:top}
 
+/* Dark mode showcase (independent styles) */
+.dark-mode-figure{display:block;width:100%;margin:0;border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;background:var(--bg-secondary)}
+.dark-mode-figure img{display:block;width:100%;height:auto}
+
 /* CTA */
 .cta{padding:34px 0}
 .cta-inner{border:none;border-radius:var(--radius-lg);padding:24px;background:transparent;text-align:center}
