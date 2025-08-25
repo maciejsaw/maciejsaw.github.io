@@ -152,9 +152,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible { outline: non
 
 /* --- SESSION LIST VIEW --- */
 #sessionListView .container { max-width: 800px; margin: auto; padding: 16px; }
-#sessionListView header {border: none; padding-bottom: 1rem; margin-bottom: 2rem; }
-#sessionListView header h1 { font-size: 1.6rem; }
-#sessionListView header p { font-size: 1.1rem; color: var(--text-secondary);}
+#sessionListView header {border: none; padding-bottom: 1rem; margin-bottom: 0rem; margin-top: 1rem; }
+#sessionListView header h1 { font-size: 1.6rem; margin: 0; }
+#sessionListView header p { font-size: 1.1rem; color: var(--text-secondary); margin-top: 0.25rem; }
 #sessionListView .session-list-controls { margin-bottom: 2rem; }
 #newSessionButton { background-color: var(--bg-button-dark); color: white; }
 #newSessionButton:hover { background-color: var(--bg-button-dark-hover); }
