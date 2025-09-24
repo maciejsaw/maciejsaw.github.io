@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lottie Fullscreen Preview Tool (Light, Max Width)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.2/lottie.min.js"></script>
+  <style>
+    html,body{height:100%;margin:0;background:#ffffff;color:#222;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
+    #app{height:100%;box-sizing:border-box;padding:30px;display:flex;flex-direction:column}
+
+    .preview-area{flex:1;position:relative;overflow:hidden;border-radius:8px;background:#ffffff}
+    .preview-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+    #lottieContainer{width:100%;height:100%;max-width:1920px;max-height:1080px}
+
+    .controls{height:96px;display:flex;align-items:center;gap:12px;padding:10px 12px;background:#ffffff;border:1px solid #e6e6e6;border-radius:8px;margin-top:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+    .btn{background:#ffffff;border:1px solid #d0d0d0;padding:8px 12px;color:#222;border-radius:6px;cursor:pointer}
+    .btn:hover{background:#fbfbfb}
+    .btn:active{transform:translateY(1px)}
+    .toggles{display:flex;gap:10px;align-items:center}
+
+    .timeline-wrap{flex:1;display:flex;flex-direction:column;gap:8px}
+    .timeline{position:relative;height:14px;background:#efefef;border-radius:6px;user-select:none}
+    .progress{position:absolute;left:0;top:0;height:100%;width:0%;border-radius:6px;background:linear-gradient(90deg, #90caf9, #64b5f6)}
+    .handle{position:absolute;top:-6px;width:12px;height:26px;background:#1976d2;border-radius:6px;cursor:ew-resize;transform:translateX(-50%);box-shadow:0 2px 6px rgba(0,0,0,0.15)}
+    .handle .label{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:12px;color:#fff;padding:3px 6px;border-radius:6px;background:#1976d2}
+    .current-scrubber{position:absolute;top:-4px;width:2px;height:22px;background:#f50057;left:0;transform:translateX(-50%)}
+
+    .drop-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+    .drop-box{pointer-events:auto;padding:18px 22px;border:2px dashed #d7d7d7;border-radius:12px;background:#ffffff;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.04)}
+
+    .small{font-size:13px;color:#555}
+    .muted{color:#777}
+
+    @media (max-width:640px){.controls{flex-direction:column;height:auto;padding:10px}}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="preview-area" id="previewArea">
+      <div class="preview-inner" id="previewInner">
+        <div id="lottieContainer"><div id="lottie"></div></div>
+      </div>
+
+      <div class="drop-overlay" id="dropOverlay">
+        <div class="drop-box" id="dropBox">
+          <strong>Drag & drop a Lottie JSON file here</strong>
+          <div class="small muted" style="margin-top:8px">or <input type="file" id="fileInput" accept="application/json"> from disk</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn" id="playBtn">Play</button>
+        <button class="btn" id="pauseBtn">Pause</button>
+        <div style="display:flex;flex-direction:column;align-items:flex-start">
+          <label style="font-size:12px;color:#555">Loop</label>
+          <label class="toggles"><input type="checkbox" id="loopToggle" checked> <span class="small muted">Enable</span></label>
+        </div>
+      </div>
+
+      <div class="timeline-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="small" id="frameLabel">Frame: - / -</div>
+          <div class="small" id="segmentLabel">Segment: 0 — 0</div>
+        </div>
+
+        <div class="timeline" id="timeline">
+          <div class="progress" id="progress"></div>
+          <div class="handle" id="startHandle" style="left:0%"><div class="label">Start</div></div>
+          <div class="handle" id="endHandle" style="left:100%"><div class="label">End</div></div>
+          <div class="current-scrubber" id="scrubber" style="left:0%"></div>
+        </div>
+      </div>
+
+      <div style="width:220px;display:flex;flex-direction:column;gap:6px;margin-left:12px">
+        <div class="small">Preview size</div>
+        <input type="range" id="scaleRange" min="200" max="1920" value="1920">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let anim = null;
+    let frameCount = 0;
+    const dropOverlay = document.getElementById('dropOverlay');
+    const previewArea = document.getElementById('previewArea');
+    const fileInput = document.getElementById('fileInput');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const loopToggle = document.getElementById('loopToggle');
+    const progressEl = document.getElementById('progress');
+    const scrubber = document.getElementById('scrubber');
+    const startHandle = document.getElementById('startHandle');
+    const endHandle = document.getElementById('endHandle');
+    const frameLabel = document.getElementById('frameLabel');
+    const segmentLabel = document.getElementById('segmentLabel');
+    const timeline = document.getElementById('timeline');
+    const scaleRange = document.getElementById('scaleRange');
+    const lottieContainer = document.getElementById('lottieContainer');
+
+    function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+    let dragging = null;
+    let timelineRect = null;
+    let segmentStart = 0;
+    let segmentEnd = 0;
+
+    function pctToFrame(p){ return Math.round(p * Math.max(1, frameCount-1)); }
+    function frameToPct(f){ return (f / Math.max(1, frameCount-1)); }
+
+    function setSegment(startFrame, endFrame){
+      segmentStart = clamp(startFrame, 0, Math.max(0,frameCount-1));
+      segmentEnd = clamp(endFrame, 0, Math.max(0,frameCount-1));
+      startHandle.style.left = (frameToPct(segmentStart)*100) + '%';
+      endHandle.style.left = (frameToPct(segmentEnd)*100) + '%';
+      segmentLabel.textContent = `Segment: ${segmentStart} — ${segmentEnd}`;
+    }
+
+    function updateFrameLabel(){
+      if(!anim){ frameLabel.textContent = 'Frame: - / -'; return; }
+      const cur = Math.round(anim.currentFrame || 0);
+      frameLabel.textContent = `Frame: ${cur} / ${Math.max(0,frameCount-1)}`;
+    }
+
+    function loadLottieFromJSON(json){
+      if(anim){anim.destroy(); anim = null}
+      try{
+        anim = lottie.loadAnimation({
+          container: document.getElementById('lottie'),
+          renderer: 'svg',
+          loop: false,
+          autoplay: false,
+          animationData: json
+        });
+
+        anim.addEventListener('DOMLoaded', ()=>{
+          frameCount = Math.floor(anim.getDuration(true));
+          updateFrameLabel();
+          setSegment(0, Math.max(0,frameCount-1));
+
+          dropOverlay.style.display = 'none';
+          loopToggle.checked = true;
+          anim.play();
+        });
+
+        anim.addEventListener('enterFrame', e=>{
+          const cur = (typeof anim.currentFrame !== 'undefined') ? anim.currentFrame : (e && e.currentTime) || 0;
+          const pct = clamp(cur / Math.max(1, frameCount-1), 0, 1);
+          progressEl.style.width = (pct*100).toFixed(3) + '%';
+          scrubber.style.left = (pct*100) + '%';
+          updateFrameLabel();
+
+          if(loopToggle.checked){
+            if(cur >= segmentEnd - 0.01){
+              anim.goToAndPlay(segmentStart, true);
+            }
+          }
+        });
+
+      }catch(err){
+        alert('Failed to load Lottie: '+err.message);
+      }
+    }
+
+    previewArea.addEventListener('dragover', e=>{ e.preventDefault(); dropOverlay.style.display='flex'; e.dataTransfer.dropEffect = 'copy'; });
+    previewArea.addEventListener('dragleave', e=>{ e.preventDefault(); });
+    previewArea.addEventListener('drop', e=>{
+      e.preventDefault(); dropOverlay.style.display='none';
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if(!f) return;
+      if(!f.type.includes('json') && !f.name.toLowerCase().endsWith('.json')){
+        alert('Please drop a .json Lottie file'); return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => { try{ const json = JSON.parse(reader.result); loadLottieFromJSON(json); }catch(err){alert('Invalid JSON')} };
+      reader.readAsText(f);
+    });
+
+    fileInput.addEventListener('change', e=>{
+      const f = e.target.files[0]; if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{ try{ loadLottieFromJSON(JSON.parse(reader.result)); }catch(err){alert('Invalid JSON')} };
+      reader.readAsText(f);
+    });
+
+    playBtn.addEventListener('click', ()=>{ if(anim) anim.play(); });
+    pauseBtn.addEventListener('click', ()=>{ if(anim) anim.pause(); });
+
+    function startDrag(handle, clientX){
+      dragging = handle;
+      timelineRect = timeline.getBoundingClientRect();
+      onDrag(clientX);
+      document.addEventListener('mousemove', mouseMove);
+      document.addEventListener('mouseup', mouseUp);
+      document.addEventListener('touchmove', touchMove, {passive:false});
+      document.addEventListener('touchend', touchEnd);
+    }
+    function onDrag(clientX){
+      if(!timelineRect) timelineRect = timeline.getBoundingClientRect();
+      const x = clamp(clientX - timelineRect.left, 0, timelineRect.width);
+      const pct = x / timelineRect.width;
+      const f = pctToFrame(pct);
+      if(dragging === 'start'){
+        setSegment(Math.min(f, segmentEnd), segmentEnd);
+      }else if(dragging === 'end'){
+        setSegment(segmentStart, Math.max(f, segmentStart));
+      }
+    }
+    function mouseMove(e){ onDrag(e.clientX); }
+    function mouseUp(e){ stopDrag(); }
+    function touchMove(e){ e.preventDefault(); onDrag(e.touches[0].clientX); }
+    function touchEnd(e){ stopDrag(); }
+    function stopDrag(){
+      if(dragging){
+        dragging = null;
+        document.removeEventListener('mousemove', mouseMove);
+        document.removeEventListener('mouseup', mouseUp);
+        document.removeEventListener('touchmove', touchMove);
+        document.removeEventListener('touchend', touchEnd);
+      }
+    }
+
+    startHandle.addEventListener('mousedown', e=>{ startDrag('start', e.clientX); });
+    endHandle.addEventListener('mousedown', e=>{ startDrag('end', e.clientX); });
+    startHandle.addEventListener('touchstart', e=>{ startDrag('start', e.touches[0].clientX); });
+    endHandle.addEventListener('touchstart', e=>{ startDrag('end', e.touches[0].clientX); });
+
+    timeline.addEventListener('click', e=>{
+      if(!anim) return;
+      const r = timeline.getBoundingClientRect();
+      const pct = clamp((e.clientX - r.left) / r.width, 0,1);
+      const frame = pctToFrame(pct);
+      anim.goToAndStop(frame, true);
+    });
+
+    scaleRange.addEventListener('input', ()=>{
+      const val = Number(scaleRange.value);
+      lottieContainer.style.maxWidth = val + 'px';
+    });
+
+    setSegment(0, 0);
+
+    window.addEventListener('keydown', e=>{ if(e.key==='o' || e.key==='O'){ fileInput.click() } });
+    window.addEventListener('beforeunload', ()=>{ if(anim) anim.destroy(); });
+  </script>
+</body>
+</html>
