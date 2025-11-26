@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluid Sphere - Exact Defaults 2</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #ebebeb; }
+        canvas { display: block; }
+        #loading {
+            position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            color: black; font-family: sans-serif; font-weight: bold;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+    <!-- Import Map - Using 0.169.0 -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/",
+                "lil-gui": "https://unpkg.com/three@0.169.0/examples/jsm/libs/lil-gui.module.min.js"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div id="loading">Loading Font...</div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+        import { GUI } from 'lil-gui';
+
+        // --- Configuration Object (Exact values from screenshot) ---
+        const params = {
+            bgColor: '#ebebeb',
+            
+            // Text Settings
+            showText: false,
+            textColor: '#000000',
+            textDistance: 2.444,
+            
+            // Glass Material Settings
+            color: '#ffffff',
+            dispersion: 2.11,    // Updated
+            transmission: 0.99,
+            roughness: 0.0,
+            metalness: 0.0,
+            thickness: 1.5,
+            ior: 2.118,          // Updated
+
+            // Fluid Settings
+            fluidSpeed: 0.575,
+            waveStrength: 0.0635,
+            waveFrequency: 1.6038,
+            meshResolution: 1024,
+            
+            // Rotation Settings
+            autoRotateSpeed: 0.1,
+
+            // Reflection (Environment)
+            envCount: 1,       
+            envSize: 3.5,      
+            envBrightness: 2.76,
+            envDistance: 10,
+
+            // Backdrop: Hidden Ring
+            ringEnabled: true,
+            ringColor: '#660058',  
+            ringCount: 1,
+            ringRadius: 0.2534,    // Updated
+            ringTube: 0.10094,     // Updated
+            ringDistance: 1.0,     // Updated
+
+            // Backdrop: Hidden Sphere
+            bgSphereEnabled: true,
+            bgSphereColor: '#ffffff',
+            bgSphereRadius: 0.13068,   // Updated
+            bgSphereDistance: 1.107,   // Updated
+
+            // Spot Light
+            lightIntensity: 5.0,
+            lightColor: '#ffffff',
+            lightAngle: 0.6,
+            lightPenumbra: 0.5,
+            lightX: 2,
+            lightY: 5,
+            lightZ: 5,
+            
+            ambientIntensity: 2.235
+        };
+
+        // --- 1. Scene Setup ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(params.bgColor);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 0, 5);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        // --- 2. Environment Helper ---
+        function createSoftCircleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.8)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 128, 128);
+            return new THREE.CanvasTexture(canvas);
+        }
+        const softCircleTexture = createSoftCircleTexture();
+
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+        pmremGenerator.compileEquirectangularShader();
+        const envScene = new THREE.Scene();
+        
+        function updateEnvironment() {
+            while(envScene.children.length > 0) envScene.remove(envScene.children[0]);
+
+            const material = new THREE.SpriteMaterial({ 
+                map: softCircleTexture, color: 0xffffff, toneMapped: false, transparent: true
+            });
+
+            for(let i=0; i < params.envCount; i++) {
+                material.color.setScalar(params.envBrightness);
+                const sprite = new THREE.Sprite(material);
+                
+                let theta, phi;
+                if(params.envCount === 1) { theta = Math.PI / 4; phi = Math.PI / 3; } 
+                else { theta = Math.random() * Math.PI * 2; phi = Math.acos((Math.random() * 2) - 1); }
+                
+                const r = params.envDistance;
+                sprite.position.x = r * Math.sin(phi) * Math.cos(theta);
+                sprite.position.y = r * Math.sin(phi) * Math.sin(theta);
+                sprite.position.z = r * Math.cos(phi);
+                sprite.scale.set(params.envSize, params.envSize, 1);
+                envScene.add(sprite);
+            }
+            scene.environment = pmremGenerator.fromScene(envScene).texture;
+        }
+        updateEnvironment(); 
+
+        // --- 3. Backdrop System (Ring + Sphere) ---
+        const backdropGroup = new THREE.Group();
+        scene.add(backdropGroup);
+
+        function updateBackdrop() {
+            // Clear existing
+            while(backdropGroup.children.length > 0) {
+                const child = backdropGroup.children[0];
+                child.geometry.dispose();
+                child.material.dispose();
+                backdropGroup.remove(child);
+            }
+
+            // 1. Create Rings
+            if(params.ringEnabled) {
+                const geometry = new THREE.TorusGeometry(params.ringRadius, params.ringTube, 16, 100);
+                const material = new THREE.MeshBasicMaterial({ color: params.ringColor });
+
+                for(let i = 0; i < params.ringCount; i++) {
+                    const mesh = new THREE.Mesh(geometry, material);
+                    mesh.position.set(0, 0, -params.ringDistance);
+                    if(params.ringCount > 1) {
+                        mesh.rotation.x = Math.random() * Math.PI;
+                        mesh.rotation.y = Math.random() * Math.PI;
+                        mesh.position.z -= i * 0.5;
+                    }
+                    backdropGroup.add(mesh);
+                }
+            }
+
+            // 2. Create Inner Sphere
+            if(params.bgSphereEnabled) {
+                const geometry = new THREE.SphereGeometry(params.bgSphereRadius, 64, 64);
+                const material = new THREE.MeshBasicMaterial({ color: params.bgSphereColor });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(0, 0, -params.bgSphereDistance);
+                backdropGroup.add(mesh);
+            }
+        }
+        updateBackdrop();
+
+
+        // --- 4. Lighting ---
+        const spotLight = new THREE.SpotLight(params.lightColor, params.lightIntensity);
+        spotLight.position.set(params.lightX, params.lightY, params.lightZ);
+        spotLight.angle = params.lightAngle;
+        spotLight.penumbra = params.lightPenumbra;
+        spotLight.decay = 0; spotLight.distance = 0;
+        spotLight.castShadow = true;
+        spotLight.shadow.mapSize.width = 1024; spotLight.shadow.mapSize.height = 1024;
+        scene.add(spotLight);
+        scene.add(spotLight.target);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, params.ambientIntensity);
+        scene.add(ambientLight);
+
+        // --- 5. Fluid Material (Shader) ---
+        const customUniforms = {
+            uTime: { value: 0 },
+            uStrength: { value: params.waveStrength },
+            uFrequency: { value: params.waveFrequency }
+        };
+
+        const glassMaterial = new THREE.MeshPhysicalMaterial({
+            color: params.color, transmission: params.transmission, opacity: 1.0, 
+            metalness: params.metalness, roughness: params.roughness,
+            ior: params.ior, thickness: params.thickness, 
+            specularIntensity: 1.0, specularColor: 0xffffff,
+            side: THREE.DoubleSide, transparent: true,
+            envMapIntensity: params.ambientIntensity,
+            dispersion: params.dispersion
+        });
+
+        glassMaterial.onBeforeCompile = (shader) => {
+            shader.uniforms.uTime = customUniforms.uTime;
+            shader.uniforms.uStrength = customUniforms.uStrength;
+            shader.uniforms.uFrequency = customUniforms.uFrequency;
+            shader.vertexShader = `
+                uniform float uTime; uniform float uStrength; uniform float uFrequency;
+                vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+                vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+                float pnoise(vec3 P, vec3 rep) {
+                  vec3 Pi0 = mod(floor(P), rep); vec3 Pi1 = mod(Pi0 + vec3(1.0), rep);
+                  Pi0 = mod289(Pi0); Pi1 = mod289(Pi1);
+                  vec3 Pf0 = fract(P); vec3 Pf1 = Pf0 - vec3(1.0);
+                  vec4 ix = vec4(Pi0.x, Pi1.x, Pi0.x, Pi1.x); vec4 iy = vec4(Pi0.y, Pi0.y, Pi1.y, Pi1.y);
+                  vec4 iz0 = Pi0.zzzz; vec4 iz1 = Pi1.zzzz;
+                  vec4 ixy = permute(permute(ix) + iy);
+                  vec4 ixy0 = permute(ixy + iz0); vec4 ixy1 = permute(ixy + iz1);
+                  vec4 gx0 = ixy0 * (1.0 / 7.0); vec4 gy0 = fract(floor(gx0) * (1.0 / 7.0)) - 0.5;
+                  gx0 = fract(gx0); vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
+                  vec4 sz0 = step(gz0, vec4(0.0));
+                  gx0 -= sz0 * (step(0.0, gx0) - 0.5); gy0 -= sz0 * (step(0.0, gy0) - 0.5);
+                  vec4 gx1 = ixy1 * (1.0 / 7.0); vec4 gy1 = fract(floor(gx1) * (1.0 / 7.0)) - 0.5;
+                  gx1 = fract(gx1); vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
+                  vec4 sz1 = step(gz1, vec4(0.0));
+                  gx1 -= sz1 * (step(0.0, gx1) - 0.5); gy1 -= sz1 * (step(0.0, gy1) - 0.5);
+                  vec3 g000 = vec3(gx0.x,gy0.x,gz0.x); vec3 g100 = vec3(gx0.y,gy0.y,gz0.y);
+                  vec3 g010 = vec3(gx0.z,gy0.z,gz0.z); vec3 g110 = vec3(gx0.w,gy0.w,gz0.w);
+                  vec3 g001 = vec3(gx1.x,gy1.x,gz1.x); vec3 g101 = vec3(gx1.y,gy1.y,gz1.y);
+                  vec3 g011 = vec3(gx1.z,gy1.z,gz1.z); vec3 g111 = vec3(gx1.w,gy1.w,gz1.w);
+                  vec4 norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110)));
+                  g000 *= norm0.x; g010 *= norm0.y; g100 *= norm0.z; g110 *= norm0.w;
+                  vec4 norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111)));
+                  g001 *= norm1.x; g011 *= norm1.y; g101 *= norm1.z; g111 *= norm1.w;
+                  float n000 = dot(g000, Pf0); float n100 = dot(g100, vec3(Pf0.x, Pf0.y, Pf0.z));
+                  float n010 = dot(g010, vec3(Pf0.x, Pf1.y, Pf0.z)); float n110 = dot(g110, vec3(Pf0.x, Pf1.y, Pf0.z));
+                  float n001 = dot(g001, vec3(Pf0.x, Pf0.y, Pf1.z)); float n101 = dot(g101, vec3(Pf0.x, Pf0.y, Pf1.z));
+                  float n011 = dot(g011, vec3(Pf0.x, Pf1.y, Pf1.z)); float n111 = dot(g111, vec3(Pf0.x, Pf1.y, Pf1.z));
+                  vec3 fade_xyz = Pf0 * Pf0 * (3.0 - 2.0 * Pf0);
+                  vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
+                  vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
+                  float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
+                  return 2.2 * n_xyz;
+                }
+            ` + shader.vertexShader;
+            shader.vertexShader = shader.vertexShader.replace(
+                '#include <begin_vertex>',
+                `#include <begin_vertex>
+                float noise = pnoise(position * uFrequency + uTime * 0.5, vec3(100.0));
+                float displacement = noise * uStrength; 
+                transformed += normal * displacement;`
+            );
+        };
+
+        // --- 6. Main Object ---
+        let sphereMesh;
+        function updateSphereGeometry() {
+            if(sphereMesh) { scene.remove(sphereMesh); sphereMesh.geometry.dispose(); }
+            const sphereGeometry = new THREE.SphereGeometry(0.85, params.meshResolution, params.meshResolution);
+            sphereMesh = new THREE.Mesh(sphereGeometry, glassMaterial);
+            sphereMesh.castShadow = true; sphereMesh.receiveShadow = true;
+            scene.add(sphereMesh);
+        }
+        updateSphereGeometry();
+
+        // --- 7. Text Loader ---
+        let textMesh;
+        const loader = new FontLoader();
+        loader.load('https://unpkg.com/three@0.169.0/examples/fonts/helvetiker_bold.typeface.json', function (font) {
+            const textGeometry = new TextGeometry('hello world!', {
+                font: font, size: 0.5, height: 0.01, curveSegments: 12, bevelEnabled: false
+            });
+            textGeometry.computeBoundingBox();
+            const centerOffset = -0.5 * (textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x);
+            const verticalOffset = -0.5 * (textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y);
+            textGeometry.translate(centerOffset, verticalOffset, 0);
+            const textMaterial = new THREE.MeshBasicMaterial({ color: params.textColor });
+            textMesh = new THREE.Mesh(textGeometry, textMaterial);
+            textMesh.position.z = -params.textDistance;
+            textMesh.visible = params.showText; 
+            scene.add(textMesh);
+            document.getElementById('loading').style.display = 'none';
+        });
+
+        // --- 8. GUI Controls ---
+        const gui = new GUI({ title: 'Scene Settings' });
+        
+        gui.addColor(params, 'bgColor').name('Background Color').onChange(val => scene.background.set(val));
+
+        const textFolder = gui.addFolder('Text');
+        textFolder.add(params, 'showText').name('Show Text').onChange(val => { if(textMesh) textMesh.visible = val; });
+        textFolder.addColor(params, 'textColor').name('Text Color').onChange(val => { if(textMesh) textMesh.material.color.set(val); });
+        textFolder.add(params, 'textDistance', 1.0, 5.0).name('Distance').onChange(val => { if(textMesh) textMesh.position.z = -val; });
+
+        const matFolder = gui.addFolder('Glass Material');
+        matFolder.addColor(params, 'color').name('Color').onChange(v => glassMaterial.color.set(v));
+        matFolder.add(params, 'dispersion', 0, 10).name('Dispersion').onChange(v => glassMaterial.dispersion = v);
+        matFolder.add(params, 'transmission', 0, 1).name('Transmission').onChange(v => glassMaterial.transmission = v);
+        matFolder.add(params, 'roughness', 0, 1).name('Roughness').onChange(v => glassMaterial.roughness = v);
+        matFolder.add(params, 'thickness', 0, 5).name('Thickness').onChange(v => glassMaterial.thickness = v);
+        matFolder.add(params, 'ior', 1, 2.5).name('IOR').onChange(v => glassMaterial.ior = v);
+
+        const fluidFolder = gui.addFolder('Fluid Sphere');
+        fluidFolder.add(params, 'fluidSpeed', 0.0, 5.0).name('Flow Speed');
+        fluidFolder.add(params, 'waveStrength', 0.0, 0.5).name('Wave Height').onChange(val => customUniforms.uStrength.value = val);
+        fluidFolder.add(params, 'waveFrequency', 0.1, 10.0).name('Wave Frequency').onChange(val => customUniforms.uFrequency.value = val);
+        fluidFolder.add(params, 'meshResolution', 64, 1024, 1).name('Mesh Resolution').onFinishChange(val => { params.meshResolution = val; updateSphereGeometry(); });
+
+        const rotFolder = gui.addFolder('Rotation');
+        rotFolder.add(params, 'autoRotateSpeed', -2.0, 2.0).name('Rotation Speed');
+
+        const envFolder = gui.addFolder('Reflection (Environment)');
+        envFolder.add(params, 'envCount', 1, 10, 1).name('Light Count').onChange(updateEnvironment);
+        envFolder.add(params, 'envSize', 0.5, 10.0).name('Blur Size').onChange(updateEnvironment);
+        envFolder.add(params, 'envBrightness', 0.5, 10.0).name('Brightness').onChange(updateEnvironment);
+
+        const backFolder = gui.addFolder('Backdrop (Hidden Objects)');
+        
+        // Ring Controls
+        backFolder.add(params, 'ringEnabled').name('Enable Ring').onChange(updateBackdrop);
+        backFolder.addColor(params, 'ringColor').name('Ring Color').onChange(updateBackdrop);
+        backFolder.add(params, 'ringCount', 1, 20, 1).name('Number of Rings').onChange(updateBackdrop);
+        backFolder.add(params, 'ringRadius', 0.1, 1.5).name('Ring Radius').onChange(updateBackdrop);
+        backFolder.add(params, 'ringTube', 0.01, 0.5).name('Ring Width').onChange(updateBackdrop);
+        backFolder.add(params, 'ringDistance', 0.5, 5.0).name('Ring Distance').onChange(val => { params.ringDistance = val; updateBackdrop(); });
+
+        // Sphere Controls (NEW)
+        backFolder.add(params, 'bgSphereEnabled').name('Enable Sphere').onChange(updateBackdrop);
+        backFolder.addColor(params, 'bgSphereColor').name('Sphere Color').onChange(updateBackdrop);
+        backFolder.add(params, 'bgSphereRadius', 0.01, 1.0).name('Sphere Radius').onChange(updateBackdrop);
+        backFolder.add(params, 'bgSphereDistance', 0.5, 5.0).name('Sphere Distance').onChange(val => { params.bgSphereDistance = val; updateBackdrop(); });
+
+
+        const lightFolder = gui.addFolder('Spot Light');
+        lightFolder.add(params, 'lightIntensity', 0, 20).name('Intensity').onChange(v => spotLight.intensity = v);
+        lightFolder.addColor(params, 'lightColor').name('Color').onChange(v => spotLight.color.set(v));
+        lightFolder.add(params, 'lightAngle', 0, 1.5).name('Cone Width').onChange(v => spotLight.angle = v);
+        lightFolder.add(params, 'lightPenumbra', 0, 1).name('Softness').onChange(v => spotLight.penumbra = v);
+        const posFolder = lightFolder.addFolder('Position');
+        posFolder.add(params, 'lightX', -10, 10).name('X').onChange(v => spotLight.position.x = v);
+        posFolder.add(params, 'lightY', -10, 10).name('Y').onChange(v => spotLight.position.y = v);
+        posFolder.add(params, 'lightZ', -10, 10).name('Z').onChange(v => spotLight.position.z = v);
+        lightFolder.add(params, 'ambientIntensity', 0, 5).name('Ambient / Env').onChange(v => { ambientLight.intensity = v; glassMaterial.envMapIntensity = v; });
+
+        // --- 9. Animation ---
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; controls.enablePan = false;
+        const clock = new THREE.Clock();
+        let accumulatedTime = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            accumulatedTime += delta * params.fluidSpeed;
+            customUniforms.uTime.value = accumulatedTime;
+            if (sphereMesh) sphereMesh.rotation.y += params.autoRotateSpeed * delta;
+            
+            // Subtle movement if multiple objects exist in backdrop
+            if(backdropGroup.children.length > 0 && params.ringCount > 1) {
+                 backdropGroup.rotation.z += 0.002;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
