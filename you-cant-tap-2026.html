@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trening Celności</title>
+    <title>You Can't Tap</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -29,11 +29,22 @@
 
     <!-- Ekran menu startowego (Ustawienia) -->
     <div id="menu-screen" class="absolute inset-0 flex flex-col items-center justify-center z-50 bg-black">
-        <h1 class="text-4xl md:text-6xl font-bold mb-8 text-white tracking-widest uppercase text-center">Trening Celności</h1>
+        <h1 class="text-4xl md:text-6xl font-bold mb-8 text-white tracking-widest uppercase text-center">You Can't Tap</h1>
         
         <div class="bg-gray-900 p-8 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-md">
             <h2 class="text-2xl font-semibold mb-6 text-center text-gray-200">Ustawienia gry</h2>
             
+            <!-- Predefiniowane tryby -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-400 mb-2 text-center">Gotowe tryby treningowe</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="preset-easy" type="button" class="bg-gray-800 hover:bg-gray-700 text-white text-sm py-2 rounded border border-gray-600 transition">Rozgrzewka (Łatwy)</button>
+                    <button id="preset-flick" type="button" class="bg-gray-800 hover:bg-gray-700 text-white text-sm py-2 rounded border border-gray-600 transition">Refleks (Duży obszar)</button>
+                    <button id="preset-precision" type="button" class="bg-gray-800 hover:bg-gray-700 text-white text-sm py-2 rounded border border-gray-600 transition">Snajper (Precyzja)</button>
+                    <button id="preset-madness" type="button" class="bg-gray-800 hover:bg-gray-700 text-white text-sm py-2 rounded border border-gray-600 transition">Szaleństwo (Trudny)</button>
+                </div>
+            </div>
+
             <div class="space-y-5">
                 <div>
                     <label for="setting-size" class="block text-sm font-medium text-gray-400 mb-1">Wielkość kółka (w pikselach)</label>
@@ -171,6 +182,27 @@
             oscillator.stop(audioCtx.currentTime + 0.05);
         }
 
+        function playMissSound() {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            // Krótki, niższy i cichszy dźwięk dla pudła (błędu)
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.1);
+            
+            // Gain (głośność) jest ustawiony na 0.15, więc dźwięk jest dyskretny
+            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        }
+
         // --- Logika Gry ---
 
         function startGame() {
@@ -292,7 +324,7 @@
             } else {
                 // PUDŁO (kliknięto tło)
                 gameState.misses++;
-                // Brak dźwięku przy pudle
+                playMissSound();
             }
             updateHUD();
         }
@@ -327,9 +359,44 @@
                 spawnTargets();
             } else if (targetElement === UI.playArea) {
                 gameState.misses++;
+                playMissSound();
             }
             updateHUD();
         }, { passive: false });
+
+        // --- Obsługa gotowych trybów (Presetów) ---
+        const presets = {
+            easy: { size: 80, time: 60, area: 50, count: 1 },       // Duże kółka, na małym obszarze w centrum
+            flick: { size: 60, time: 60, area: 100, count: 1 },     // Średnie kółka, ale na całym ekranie (wymaga szybkiego poruszania)
+            precision: { size: 20, time: 60, area: 40, count: 2 },  // Małe kółka, blisko siebie (test precyzji)
+            madness: { size: 40, time: 60, area: 90, count: 5 }     // Dużo kółek na raz z rozsianiem
+        };
+
+        function applyPreset(presetName) {
+            const p = presets[presetName];
+            if (!p) return;
+            
+            // Ustawienie wielkości
+            UI.inputSize.value = p.size;
+            document.getElementById('size-val').innerText = p.size + 'px';
+            
+            // Ustawienie czasu
+            UI.inputTime.value = p.time;
+            
+            // Ustawienie obszaru
+            UI.inputArea.value = p.area;
+            document.getElementById('area-val').innerText = p.area + '%';
+            
+            // Ustawienie ilości startowej
+            UI.inputCount.value = p.count;
+            document.getElementById('count-val').innerText = p.count;
+        }
+
+        // Przypisanie zdarzeń do przycisków presetów
+        document.getElementById('preset-easy').addEventListener('click', () => applyPreset('easy'));
+        document.getElementById('preset-flick').addEventListener('click', () => applyPreset('flick'));
+        document.getElementById('preset-precision').addEventListener('click', () => applyPreset('precision'));
+        document.getElementById('preset-madness').addEventListener('click', () => applyPreset('madness'));
 
     </script>
 </body>
