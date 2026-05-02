@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trening Celności</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            /* Zapobiega przypadkowemu zaznaczaniu tekstu i przewijaniu na urządzeniach mobilnych */
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        
+        .target {
+            /* Kółka mają płynne pojawianie się */
+            animation: popIn 0.15s ease-out;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-black text-white h-screen w-screen overflow-hidden font-sans">
+
+    <!-- Ekran menu startowego (Ustawienia) -->
+    <div id="menu-screen" class="absolute inset-0 flex flex-col items-center justify-center z-50 bg-black">
+        <h1 class="text-4xl md:text-6xl font-bold mb-8 text-white tracking-widest uppercase text-center">Trening Celności</h1>
+        
+        <div class="bg-gray-900 p-8 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-md">
+            <h2 class="text-2xl font-semibold mb-6 text-center text-gray-200">Ustawienia gry</h2>
+            
+            <div class="space-y-5">
+                <div>
+                    <label for="setting-size" class="block text-sm font-medium text-gray-400 mb-1">Wielkość kółka (w pikselach)</label>
+                    <input type="range" id="setting-size" min="10" max="150" value="50" class="w-full accent-white" oninput="document.getElementById('size-val').innerText = this.value + 'px'">
+                    <div class="text-right text-xs text-gray-500 mt-1" id="size-val">50px</div>
+                </div>
+
+                <div>
+                    <label for="setting-time" class="block text-sm font-medium text-gray-400 mb-1">Czas rundy (w sekundach)</label>
+                    <input type="number" id="setting-time" min="10" max="300" value="60" class="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-2.5 focus:ring-white focus:border-white outline-none">
+                </div>
+
+                <div>
+                    <label for="setting-area" class="block text-sm font-medium text-gray-400 mb-1">Obszar pojawiania się (%)</label>
+                    <input type="range" id="setting-area" min="30" max="100" value="90" class="w-full accent-white" oninput="document.getElementById('area-val').innerText = this.value + '%'">
+                    <div class="text-right text-xs text-gray-500 mt-1" id="area-val">90%</div>
+                </div>
+
+                <div>
+                    <label for="setting-count" class="block text-sm font-medium text-gray-400 mb-1">Początkowa ilość kółek</label>
+                    <input type="range" id="setting-count" min="1" max="20" value="1" class="w-full accent-white" oninput="document.getElementById('count-val').innerText = this.value">
+                    <div class="text-right text-xs text-gray-500 mt-1" id="count-val">1</div>
+                </div>
+            </div>
+
+            <button id="start-btn" class="mt-8 w-full bg-white text-black font-bold py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-lg uppercase tracking-wide">
+                Rozpocznij
+            </button>
+        </div>
+    </div>
+
+    <!-- Główny ekran gry -->
+    <div id="game-screen" class="hidden relative w-full h-full cursor-crosshair">
+        <!-- Interfejs gracza (HUD) -->
+        <div class="absolute top-4 left-4 z-10 text-xl font-mono text-gray-400 pointer-events-none drop-shadow-md">
+            <div>Czas: <span id="hud-time" class="text-white font-bold">60</span>s</div>
+            <div>Trafienia: <span id="hud-hits" class="text-green-400 font-bold">0</span></div>
+            <div>Pudła: <span id="hud-misses" class="text-red-400 font-bold">0</span></div>
+        </div>
+        
+        <!-- Kontener na pojawiające się kółka -->
+        <div id="play-area" class="w-full h-full relative"></div>
+    </div>
+
+    <!-- Ekran podsumowania -->
+    <div id="result-screen" class="hidden absolute inset-0 flex flex-col items-center justify-center z-50 bg-black/95 backdrop-blur-sm">
+        <h2 class="text-5xl font-bold mb-8 text-white uppercase tracking-wider">Koniec Czasu!</h2>
+        
+        <div class="bg-gray-900 p-8 rounded-2xl border border-gray-800 text-center w-full max-w-sm mb-8">
+            <div class="grid grid-cols-2 gap-6 text-xl">
+                <div class="text-gray-400 text-right">Trafienia:</div>
+                <div class="text-green-400 font-bold text-left text-3xl" id="res-hits">0</div>
+                
+                <div class="text-gray-400 text-right">Pudła:</div>
+                <div class="text-red-400 font-bold text-left text-3xl" id="res-misses">0</div>
+                
+                <div class="text-gray-400 text-right">Celność:</div>
+                <div class="text-blue-400 font-bold text-left text-3xl" id="res-accuracy">0%</div>
+            </div>
+        </div>
+
+        <button id="restart-btn" class="bg-white text-black font-bold py-3 px-8 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-xl uppercase tracking-wide">
+            Zagraj Ponownie
+        </button>
+    </div>
+
+    <script>
+        // --- Zmienne globalne i konfiguracja ---
+        const UI = {
+            menuScreen: document.getElementById('menu-screen'),
+            gameScreen: document.getElementById('game-screen'),
+            resultScreen: document.getElementById('result-screen'),
+            playArea: document.getElementById('play-area'),
+            
+            // Ustawienia
+            inputSize: document.getElementById('setting-size'),
+            inputTime: document.getElementById('setting-time'),
+            inputArea: document.getElementById('setting-area'),
+            inputCount: document.getElementById('setting-count'),
+            
+            // HUD
+            hudTime: document.getElementById('hud-time'),
+            hudHits: document.getElementById('hud-hits'),
+            hudMisses: document.getElementById('hud-misses'),
+            
+            // Podsumowanie
+            resHits: document.getElementById('res-hits'),
+            resMisses: document.getElementById('res-misses'),
+            resAccuracy: document.getElementById('res-accuracy'),
+            
+            // Przyciski
+            btnStart: document.getElementById('start-btn'),
+            btnRestart: document.getElementById('restart-btn'),
+        };
+
+        let gameState = {
+            active: false,
+            hits: 0,
+            misses: 0,
+            timeLeft: 0,
+            timerInterval: null,
+            targetSize: 50,
+            spawnAreaPercent: 90,
+            initialTargets: 1,
+        };
+
+        // --- Konfiguracja Audio (Web Audio API - generowane w locie) ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playHitSound() {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            // Krótki, wysoki "klik" / "pop"
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
+            
+            gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.05);
+        }
+
+        // --- Logika Gry ---
+
+        function startGame() {
+            // Inicjalizacja dźwięku po pierwszym kliknięciu użytkownika (wymagane przez przeglądarki)
+            initAudio();
+
+            // Pobranie ustawień
+            gameState.targetSize = parseInt(UI.inputSize.value) || 50;
+            gameState.timeLeft = parseInt(UI.inputTime.value) || 60;
+            gameState.spawnAreaPercent = parseInt(UI.inputArea.value) || 90;
+            gameState.initialTargets = parseInt(UI.inputCount.value) || 1;
+            
+            // Reset statystyk
+            gameState.hits = 0;
+            gameState.misses = 0;
+            gameState.active = true;
+            
+            updateHUD();
+            
+            // Zmiana ekranów
+            UI.menuScreen.classList.add('hidden');
+            UI.resultScreen.classList.add('hidden');
+            UI.gameScreen.classList.remove('hidden');
+            UI.playArea.innerHTML = ''; // Wyczyszczenie planszy
+
+            // Wystartowanie zegara
+            clearInterval(gameState.timerInterval);
+            gameState.timerInterval = setInterval(gameTick, 1000);
+
+            // Wygenerowanie pierwszego celu
+            spawnTargets();
+        }
+
+        function gameTick() {
+            if (!gameState.active) return;
+            
+            gameState.timeLeft--;
+            UI.hudTime.innerText = gameState.timeLeft;
+
+            if (gameState.timeLeft <= 0) {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            gameState.active = false;
+            clearInterval(gameState.timerInterval);
+            
+            // Wyczyszczenie planszy
+            UI.playArea.innerHTML = '';
+            
+            // Obliczenia statystyk
+            const totalClicks = gameState.hits + gameState.misses;
+            const accuracy = totalClicks === 0 ? 0 : Math.round((gameState.hits / totalClicks) * 100);
+
+            // Aktualizacja UI podsumowania
+            UI.resHits.innerText = gameState.hits;
+            UI.resMisses.innerText = gameState.misses;
+            UI.resAccuracy.innerText = accuracy + '%';
+
+            // Zmiana ekranów
+            UI.gameScreen.classList.add('hidden');
+            UI.resultScreen.classList.remove('hidden');
+        }
+
+        function spawnTargets() {
+            if (!gameState.active) return;
+
+            // Skalowanie trudności: co 10 trafień zwiększamy limit jednoczesnych kółek
+            const maxTargetsOnScreen = gameState.initialTargets + Math.floor(gameState.hits / 10);
+            const currentTargets = document.querySelectorAll('.target').length;
+
+            for (let i = currentTargets; i < maxTargetsOnScreen; i++) {
+                createSingleTarget();
+            }
+        }
+
+        function createSingleTarget() {
+            const areaRect = UI.playArea.getBoundingClientRect();
+            
+            // Obliczanie dostępnego obszaru na podstawie procentu (wyśrodkowane)
+            const marginXPercent = (100 - gameState.spawnAreaPercent) / 2;
+            const marginYPercent = (100 - gameState.spawnAreaPercent) / 2;
+            
+            const minX = (areaRect.width * marginXPercent) / 100;
+            const minY = (areaRect.height * marginYPercent) / 100;
+            
+            // Maksymalne współrzędne z uwzględnieniem wielkości kółka
+            const maxX = areaRect.width - minX - gameState.targetSize;
+            const maxY = areaRect.height - minY - gameState.targetSize;
+
+            // Upewnienie się, że zakres jest poprawny
+            const safeMaxX = Math.max(minX, maxX);
+            const safeMaxY = Math.max(minY, maxY);
+
+            const randomX = minX + Math.random() * (safeMaxX - minX);
+            const randomY = minY + Math.random() * (safeMaxY - minY);
+
+            const target = document.createElement('div');
+            target.className = 'target absolute bg-white rounded-full cursor-pointer';
+            target.style.width = `${gameState.targetSize}px`;
+            target.style.height = `${gameState.targetSize}px`;
+            target.style.left = `${randomX}px`;
+            target.style.top = `${randomY}px`;
+
+            UI.playArea.appendChild(target);
+        }
+
+        function handleGameAreaClick(e) {
+            if (!gameState.active) return;
+
+            // Sprawdzamy czy kliknięto w cel
+            if (e.target.classList.contains('target')) {
+                // TRAFIENIE
+                gameState.hits++;
+                playHitSound();
+                e.target.remove();
+                spawnTargets(); // Zespawnuj nowy (lub nowe) cel
+            } else {
+                // PUDŁO (kliknięto tło)
+                gameState.misses++;
+                // Brak dźwięku przy pudle
+            }
+            updateHUD();
+        }
+
+        function updateHUD() {
+            UI.hudHits.innerText = gameState.hits;
+            UI.hudMisses.innerText = gameState.misses;
+            UI.hudTime.innerText = gameState.timeLeft;
+        }
+
+        // --- Event Listenery ---
+        UI.btnStart.addEventListener('click', startGame);
+        UI.btnRestart.addEventListener('click', () => {
+            UI.resultScreen.classList.add('hidden');
+            UI.menuScreen.classList.remove('hidden');
+        });
+        
+        // Obsługa kliknięć na planszy (działa na myszkę i ekrany dotykowe)
+        UI.playArea.addEventListener('mousedown', handleGameAreaClick);
+        UI.playArea.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Zapobiega podwójnym kliknięciom na urządzeniach mobilnych
+            // Bierzemy pierwszy punkt dotyku i symulujemy dla niego logikę kliknięcia
+            const touch = e.changedTouches[0];
+            const targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
+            
+            if (!gameState.active) return;
+
+            if (targetElement && targetElement.classList.contains('target')) {
+                gameState.hits++;
+                playHitSound();
+                targetElement.remove();
+                spawnTargets();
+            } else if (targetElement === UI.playArea) {
+                gameState.misses++;
+            }
+            updateHUD();
+        }, { passive: false });
+
+    </script>
+</body>
+</html>
