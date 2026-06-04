@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>Pociąg Weselny - Kompaktowe Poziomy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Kolorystyka Dyskotekowa */
+    --sky-1:#1a0033; --sky-2:#050011; --plum:#2a0845;
+    --rock-top:#2a1147; --rock-1:#1b0833; --rock-2:#100322; --rock-edge:#ff00ff;
+    --bird:#ff00aa; --bird-dk:#aa0077; --bird-belly:#ff66cc;
+    --fruit:#557799; --fruit-dk:#334466; --leaf:#aaddff;
+    --portal:#00ffff; --portal-dim:#008888; --amber:#ffff00;
+    --ink:#ffffff; --muted:#bb99dd;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;overflow:hidden;}
+  body{
+    font-family:"JetBrains Mono",monospace;color:var(--ink);
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(255, 0, 255, 0.15), transparent 55%),
+      radial-gradient(100% 70% at 80% 110%, rgba(0, 255, 255, 0.15), transparent 60%),
+      linear-gradient(170deg,var(--sky-1),var(--sky-2));
+    display:flex;flex-direction:column;align-items:center;
+    height:100dvh;user-select:none;touch-action:none;
+  }
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  
+  header{width:100%;max-width:560px;padding:12px 16px 4px;display:flex;align-items:center;justify-content:space-between;z-index:2;}
+  .menu-btn{background:transparent;border:none;color:var(--ink);cursor:pointer;padding:8px;margin:-8px;display:flex;align-items:center;justify-content:center;transition:transform 0.15s;}
+  .menu-btn:active{transform:scale(0.85);}
+  .menu-btn svg{width:26px;height:26px;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;fill:none;}
+  
+  .hud{display:flex;gap:16px;align-items:center;font-size:12px;}
+  .hud b{font-weight:700;font-size:16px;}
+  .hud .lab{color:var(--muted);font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;display:block;}
+  
+  .stage{flex:1;width:100%;display:flex;align-items:center;justify-content:center;min-height:0;position:relative;}
+  canvas{display:block;border-radius:14px; box-shadow: 0 0 40px rgba(255, 0, 255, 0.2);}
+  .stage.shake{animation:sh .26s;}
+  @keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+  .controls{width:100%;max-width:560px;padding:6px 20px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;z-index:2;}
+  .mainrow{display:flex;gap:10px;align-items:flex-end;justify-content:space-between;}
+  
+  .undo-btn{font-family:inherit;font-weight:700;font-size:13px;letter-spacing:1px;padding:16px 22px;border-radius:16px;border:1px solid rgba(255,255,255,.15);cursor:pointer;color:var(--ink);background:rgba(255,255,255,.05);transition:.12s;display:flex;gap:10px;align-items:center;margin-bottom:4px;box-shadow:0 4px 12px rgba(0,0,0,.2);}
+  .undo-btn:active{transform:scale(.94);background:rgba(255,255,255,.15);}
+  .undo-btn svg{width:20px;height:20px;}
+
+  .pad{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,56px);gap:6px;}
+  .pad button{font-size:24px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:var(--ink);border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.08s;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+  .pad button:active{transform:scale(.92);background:rgba(255,255,255,.18);}
+  .pad .up{grid-column:2;grid-row:1;}
+  .pad .left{grid-column:1;grid-row:2;}
+  .pad .down{grid-column:2;grid-row:2;}
+  .pad .right{grid-column:3;grid-row:2;}
+  
+  .hint{font-size:9.5px;color:var(--muted);text-align:center;letter-spacing:.5px;transition: color 0.3s;}
+
+  .overlay{position:fixed;inset:0;background:rgba(10,5,20,.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:10;}
+  .overlay.show{display:flex;animation:fade .3s;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  
+  .card{background:linear-gradient(165deg,#2b0f4c,#13072e);border:1px solid rgba(255,0,255,.2);border-radius:24px;padding:26px 30px;text-align:center;max-width:320px;width:90%;box-shadow:0 30px 80px rgba(0,0,0,.8); max-height:85vh; overflow-y:auto; scrollbar-width:none;}
+  .card::-webkit-scrollbar { display:none; }
+  .card h2{font-family:"Fraunces",serif;font-size:30px;margin:0 0 4px;color:var(--amber); text-shadow: 0 0 10px rgba(255,255,0,0.5);}
+  .card h3{font-family:"Fraunces",serif;font-size:22px;margin:0 0 16px;color:var(--ink);}
+  .stars{font-size:30px;letter-spacing:6px;margin:6px 0 2px;}
+  .card p{color:var(--muted);font-size:12px;margin:4px 0 18px;line-height:1.6;}
+  .card p b{color:var(--ink);font-size:14px;}
+  
+  .card button.primary-btn{font-family:inherit;font-weight:700;font-size:13px;letter-spacing:.5px;padding:14px 26px;border-radius:14px;border:0;cursor:pointer;background:linear-gradient(180deg,var(--bird),var(--bird-dk));color:#fff;width:100%;box-shadow:0 4px 15px rgba(255,0,170,.4);transition:.1s;}
+  .card button.primary-btn:active{transform:scale(.96);}
+  
+  .card hr{border:0;border-top:1px solid rgba(255,255,255,.1);margin:20px 0;}
+
+  .menu-actions{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+  .btn-new{font-family:inherit;font-weight:700;font-size:13px;letter-spacing:.5px;padding:14px;border-radius:14px;border:1px solid rgba(0,0,0,.2);cursor:pointer;background:linear-gradient(180deg,#4a2480,#2c1452);color:#fff;box-shadow:0 4px 12px rgba(100,50,200,.3);transition:.1s;}
+  .btn-new:active{transform:scale(.96);}
+  .btn-reset{font-family:inherit;font-weight:700;font-size:12px;letter-spacing:.5px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.15);cursor:pointer;color:var(--ink);background:rgba(255,255,255,.05);transition:.1s;}
+  .btn-reset:active{transform:scale(.96);background:rgba(255,255,255,.1);}
+  
+  .settings-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap: 10px; }
+  .seg{display:flex;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:11px;overflow:hidden; width: 100%;}
+  .seg button{flex: 1; font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);background:transparent;border:0;padding:10px 8px;cursor:pointer;transition:.15s;}
+  .seg button.on{background:linear-gradient(180deg,#7733cc,#5511aa);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3) inset;}
+  .stepper{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:11px;padding:4px 6px;}
+  .stepper .lab{font-size:8.5px;letter-spacing:1px;color:var(--muted);text-transform:uppercase; margin-right: 4px; text-align: left; flex: 1;}
+  .stepper button{width:26px;height:26px;border-radius:7px;border:0;background:rgba(255,255,255,.10);color:var(--ink);font-size:16px;font-weight:700;cursor:pointer;line-height:1;}
+  .stepper b{min-width:18px;text-align:center;font-size:14px;}
+
+  .gen{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:12px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+  .gen.show{display:flex;}
+</style>
+</head>
+<body>
+  <header>
+    <button id="btnMenu" class="menu-btn" aria-label="Menu">
+      <svg viewBox="0 0 24 24">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <div class="hud">
+      <div><span class="lab" id="hLvlLab">Poziom</span><b id="hLvl">1</b></div>
+      <div><span class="lab">Ruchy</span><b id="hMov">0</b><span style="color:var(--muted)">/<span id="hPar">–</span></span></div>
+      <div><span class="lab">Ludki</span><b id="hFr">0/0</b></div>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="gen" id="gen">generowanie...</div>
+  </div>
+
+  <div class="controls">
+    <div class="mainrow">
+      <button id="btnUndo" class="undo-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7v6h6"></path>
+          <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+        </svg>
+        COFNIJ
+      </button>
+      <div class="pad">
+        <button class="up" data-dir="U">▲</button>
+        <button class="left" data-dir="L">◀</button>
+        <button class="down" data-dir="D">▼</button>
+        <button class="right" data-dir="R">▶</button>
+      </div>
+    </div>
+    <div class="hint" id="hint">przesuń palcem po planszy lub użyj strzałek na dole</div>
+  </div>
+
+  <div class="overlay" id="ov">
+    <div class="card">
+      <h2 id="ovTitle">Rozwiązane!</h2>
+      <div class="stars" id="ovStars">★★★</div>
+      <p id="ovText"></p>
+      <button class="primary-btn" id="ovNext">NASTĘPNY POZIOM →</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="menuOv">
+    <div class="card">
+      <h3>Menu</h3>
+      
+      <div class="menu-actions">
+        <button class="btn-new" id="btnNew">✦ GENERUJ NOWĄ PLANSZĘ</button>
+        <button class="btn-reset" id="btnReset">⟲ ZACZNIJ TEN POZIOM OD NOWA</button>
+      </div>
+      
+      <div class="settings-row">
+        <div class="seg" id="modeSeg">
+          <button data-m="Adventure" class="on">PRZYGODA</button>
+          <button data-m="Custom">WŁASNY</button>
+        </div>
+      </div>
+
+      <div id="customSettings" style="display:none;">
+        <hr style="margin: 16px 0;">
+        <div class="settings-row">
+          <div class="seg" id="diff">
+            <button data-d="Easy" class="on">EASY</button>
+            <button data-d="Medium">MEDIUM</button>
+            <button data-d="Hard">HARD</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="stepper" style="width: 100%;">
+            <span class="lab">Liczba pułapek</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button id="spMinus">–</button><b id="spVal">0</b><button id="spPlus">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="stepper" style="width: 100%;">
+            <span class="lab">Długość pociągu</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button id="blMinus">–</button><b id="blVal">2</b><button id="blPlus">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="stepper" style="width: 100%;">
+            <span class="lab">Liczba ludków</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button id="frMinus">–</button><b id="frVal">1</b><button id="frPlus">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="stepper" style="width: 100%;">
+            <span class="lab">Cel ruchów</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button id="mvMinus">–</button><b id="mvVal">8</b><button id="mvPlus">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="stepper" style="width: 100%;">
+            <span class="lab">Dystans (kratki)</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button id="mdMinus">–</button><b id="mdVal">2</b><button id="mdPlus">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="stepper" style="width: 100%;">
+            <span class="lab">Dystans (ruchy)</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button id="pdMinus">–</button><b id="pdVal">3</b><button id="pdPlus">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <hr style="margin: 20px 0;">
+      
+      <button class="primary-btn" id="menuClose">WRÓĆ DO GRY</button>
+    </div>
+  </div>
+
+<script>
+const EMPTY = 0, WALL = 1, SPIKE = 2;
+const DIRS = {U: {dx: 0, dy: -1}, D: {dx: 0, dy: 1}, L: {dx: -1, dy: 0}, R: {dx: 1, dy: 0}};
+const DKEYS = ['U', 'D', 'L', 'R'];
+
+function mulberry32(seed) {
+  let t = seed >>> 0;
+  return function() {
+    t += 0x6D2B79F5;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function keyOf(body, mask) {
+  let s = mask;
+  for (let i = 0; i < body.length; i++) s += ',' + body[i].x + ',' + body[i].y;
+  return s;
+}
+
+function updateHint() {
+  const h = el('hint');
+  if (game && game.status === 'dead') {
+    h.textContent = "Pociąg się rozsypał! Użyj COFNIJ by spróbować ponownie.";
+    h.style.color = "#ff3366";
+    h.style.opacity = "1";
+  } else {
+    h.textContent = "przesuń palcem po planszy lub użyj strzałek na dole";
+    h.style.color = "var(--muted)";
+    h.style.opacity = "0.8";
+  }
+}
+
+function fastStep(level, body, mask, dk) {
+  const dir = DIRS[dk];
+  const {grid, W, H, portal, fruits} = level;
+  const hx = body[0].x + dir.dx, hy = body[0].y + dir.dy;
+
+  if (hx < 0 || hx >= W || hy < 0 || hy >= H || grid[hy][hx] === WALL) return {status: 'blocked'};
+  
+  if (body.length > 1 && hx === body[1].x && hy === body[1].y) return {status: 'blocked'};
+
+  if (portal.x === hx && portal.y === hy && mask === 0) return {status: 'win'};
+
+  let bit = -1;
+  for (let i = 0; i < fruits.length; i++) if (fruits[i].x === hx && fruits[i].y === hy) { bit = i; break; }
+  const ate = bit >= 0 && (mask & (1 << bit));
+  const nm = ate ? mask & ~(1 << bit) : mask;
+
+  const nb = [{x: hx, y: hy}];
+  const len = ate ? body.length + 1 : body.length;
+  for (let i = 1; i < len; i++) nb.push({x: body[i - 1].x, y: body[i - 1].y});
+
+  for (let i = 1; i < nb.length; i++) {
+    if (nb[0].x === nb[i].x && nb[0].y === nb[i].y) return {status: 'blocked'};
+  }
+
+  if (grid[hy][hx] === SPIKE) return {status: 'dead'};
+
+  while (true) {
+    let sup = false;
+    for (let i = 0; i < len; i++) {
+      const bx = nb[i].x;
+      const by = nb[i].y + 1;
+      if (by < H && grid[by][bx] === WALL) { sup = true; break; }
+      for (let f = 0; f < fruits.length; f++) {
+        if ((nm & (1 << f)) && fruits[f].x === bx && fruits[f].y === by) { 
+          sup = true; 
+          break; 
+        }
+      }
+      if (sup) break;
+    }
+    
+    if (sup) break;
+    
+    for (let i = 0; i < len; i++) nb[i].y++;
+    for (let i = 0; i < len; i++) {
+      if (nb[i].y >= H || grid[nb[i].y][nb[i].x] === SPIKE) return {status: 'dead'};
+    }
+  }
+  return {status: 'ok', body: nb, mask: nm};
+}
+
+function solve(level, nodeCap = 250000) {
+  const sm = (1 << level.fruits.length) - 1;
+  const startKey = keyOf(level.startBody, sm);
+  const q = [{body: level.startBody.map(c => ({x: c.x, y: c.y})), mask: sm, d: 0}];
+  const depth = new Set([startKey]);
+  let qi = 0, n = 1;
+
+  while (qi < q.length) {
+    const cur = q[qi++];
+    for (let k = 0; k < 4; k++) {
+      const r = fastStep(level, cur.body, cur.mask, DKEYS[k]);
+      if (r.status === 'win') return {solvable: true, minMoves: cur.d + 1, visited: depth.size};
+      if (r.status === 'ok') {
+        const key = keyOf(r.body, r.mask);
+        if (!depth.has(key)) {
+          depth.add(key);
+          q.push({body: r.body, mask: r.mask, d: cur.d + 1});
+          if (++n > nodeCap) return {solvable: false, reason: 'cap'};
+        }
+      }
+    }
+  }
+  return {solvable: false, reason: 'exhausted'};
+}
+
+function step(level, body, mask, dk) {
+  const dir = DIRS[dk];
+  const {grid, W, H, portal, fruits} = level;
+  const head = body[0];
+  const nx = head.x + dir.dx, ny = head.y + dir.dy;
+
+  if (nx < 0 || nx >= W || ny < 0 || ny >= H) return {status: 'blocked'};
+  if (grid[ny][nx] === WALL) return {status: 'blocked'};
+  
+  if (body.length > 1 && nx === body[1].x && ny === body[1].y) return {status: 'blocked'};
+
+  if (portal.x === nx && portal.y === ny && mask === 0) {
+    const wb = [{x: nx, y: ny}];
+    for (let i = 0; i < body.length - 1; i++) wb.push({x: body[i].x, y: body[i].y});
+    return {status: 'win', body: wb, mask, frames: [wb.map(c => ({...c}))]};
+  }
+
+  let bit = -1;
+  for (let i = 0; i < fruits.length; i++) if (fruits[i].x === nx && fruits[i].y === ny) { bit = i; break; }
+  const ate = bit >= 0 && (mask & (1 << bit));
+  let nm = ate ? mask & ~(1 << bit) : mask;
+
+  let nb = [{x: nx, y: ny}];
+  let len = ate ? body.length + 1 : body.length;
+  for (let i = 1; i < len; i++) nb.push({x: body[i - 1].x, y: body[i - 1].y});
+
+  for (let i = 1; i < nb.length; i++) {
+    if (nb[0].x === nb[i].x && nb[0].y === nb[i].y) return {status: 'blocked'};
+  }
+
+  const frames = [nb.map(c => ({...c}))];
+
+  if (grid[ny][nx] === SPIKE) {
+    return {status: 'dead', body: nb, mask: nm, frames, ate: !!ate};
+  }
+
+  while (true) {
+    let sup = false;
+    for (let i = 0; i < nb.length; i++) {
+      const bx = nb[i].x;
+      const by = nb[i].y + 1;
+      
+      if (by < H && grid[by][bx] === WALL) { sup = true; break; }
+      
+      for (let f = 0; f < fruits.length; f++) {
+        if ((nm & (1 << f)) && fruits[f].x === bx && fruits[f].y === by) { 
+          sup = true; 
+          break; 
+        }
+      }
+      if (sup) break;
+    }
+    
+    if (sup) break;
+    
+    for (let i = 0; i < nb.length; i++) nb[i].y++;
+    frames.push(nb.map(c => ({...c})));
+    
+    let isDead = false;
+    for (let i = 0; i < nb.length; i++) {
+      if (nb[i].y >= H || grid[nb[i].y][nb[i].x] === SPIKE) isDead = true;
+    }
+    
+    if (isDead) {
+      return {status: 'dead', body: nb, mask: nm, frames, ate: !!ate};
+    }
+  }
+  return {status: 'ok', body: nb, mask: nm, frames, ate: !!ate};
+}
+
+function buildPath(cfg, rng) {
+  const {W, H} = cfg;
+  const key = (x, y) => x + ',' + y;
+  const inB = (x, y) => x >= 2 && x <= W - 3 && y >= 2 && y <= H - 3;
+
+  let ex = 2 + Math.floor(rng() * (W - 4));
+  let ey = 2 + Math.floor(rng() * (H / 2 - 1));
+  const vis = new Set([key(ex, ey)]);
+  const path = [{x: ex, y: ey}];
+
+  const RM = [{dx: 0, dy: 1, w: 4}, {dx: -1, dy: 0, w: 6}, {dx: 1, dy: 0, w: 6}, {dx: 0, dy: -1, w: 5}];
+
+  let okc = (nx, ny) => {
+    if (!inB(nx, ny) || vis.has(key(nx, ny))) return false;
+    let nb = 0;
+    if (vis.has(key(nx + 1, ny))) nb++;
+    if (vis.has(key(nx - 1, ny))) nb++;
+    if (vis.has(key(nx, ny + 1))) nb++;
+    if (vis.has(key(nx, ny - 1))) nb++;
+    return cfg.name === 'Hard' ? nb <= 2 : nb <= 1; 
+  };
+
+  let budget = cfg.pathLen * 10;
+  while (path.length < cfg.pathLen && budget-- > 0) {
+    let cur = path[path.length - 1];
+    
+    let lastDir = path.length > 1 ? path[path.length - 1].m : null;
+    let dirCount = 0;
+    if (lastDir) {
+       for(let i = path.length - 1; i > 0; i--) {
+          let pm = path[i].m;
+          if (pm && pm.dx === lastDir.dx && pm.dy === lastDir.dy) dirCount++;
+          else break;
+       }
+    }
+
+    let cands = [];
+    for (let m of RM) {
+      let nx = cur.x + m.dx, ny = cur.y + m.dy;
+      let isSameDir = (lastDir && lastDir.dx === m.dx && lastDir.dy === m.dy);
+      let limit = m.dy === 1 ? 3 : 2; 
+      if (isSameDir && dirCount >= limit) continue;
+
+      if (okc(nx, ny)) {
+        let weight = m.w;
+        if (lastDir && !isSameDir) weight *= 4.0;
+        cands.push({nx, ny, w: weight, m});
+      }
+    }
+    
+    if (!cands.length) {
+      if (path.length <= 1) break;
+      let r = path.pop(); vis.delete(key(r.x, r.y));
+      continue;
+    }
+    let tot = 0; for (let c of cands) tot += c.w;
+    let rr = rng() * tot, pick = cands[0];
+    for (let c of cands) { if ((rr -= c.w) <= 0) { pick = c; break; } }
+    path.push({x: pick.nx, y: pick.ny, m: pick.m}); vis.add(key(pick.nx, pick.ny));
+  }
+
+  if (path.length < cfg.bodyLen + 2) return null;
+
+  let need = cfg.bodyLen;
+  let tailCount = () => {
+    let c = 1;
+    for (let i = path.length - 1; i > 0; i--) {
+      if (path[i].y === path[i - 1].y) c++; else break;
+    }
+    return c;
+  };
+
+  let att = 0;
+  while (tailCount() < need && att++ < 20) {
+    let cur = path[path.length - 1];
+    let placed = false;
+    for (let dx of (rng() < 0.5 ? [1, -1] : [-1, 1])) {
+      let nx = cur.x + dx, ny = cur.y;
+      if (okc(nx, ny)) {
+        path.push({x: nx, y: ny, m: {dx, dy: 0}}); vis.add(key(nx, ny));
+        placed = true; break;
+      }
+    }
+    if (!placed) { let r = path.pop(); vis.delete(key(r.x, r.y)); }
+  }
+  return tailCount() >= need ? path : null;
+}
+
+function genCandidate(cfg, rng) {
+  const {W, H, bodyLen} = cfg;
+  const path = buildPath(cfg, rng);
+  if (!path) return null;
+  const f = path.slice().reverse();
+
+  const grid = Array.from({length: H}, () => Array(W).fill(WALL));
+  for (let c of f) grid[c.y][c.x] = EMPTY;
+
+  const portal = {x: f[f.length - 1].x, y: f[f.length - 1].y};
+  const body = [];
+  for (let i = 0; i < bodyLen; i++) body.push({x: f[i].x, y: f[i].y});
+
+  const isCrit = (cx, cy) => {
+    for (let b of body) if (b.x === cx && b.y + 1 === cy) return true;
+    if (portal.x === cx && portal.y + 1 === cy) return true;
+    return false;
+  };
+
+  let structSteps = Math.floor(W * H * (cfg.name === 'Hard' ? 0.04 : 0.08));
+  for (let i = 0; i < structSteps; i++) {
+    let ex = 1 + Math.floor(rng() * (W - 2));
+    let ey = 1 + Math.floor(rng() * (H - 2));
+    if (rng() > 0.5) {
+      let len = 2 + Math.floor(rng() * 2);
+      for(let dx=0; dx<len; dx++) {
+        if (ex+dx < W-1 && grid[ey][ex+dx] === WALL && !isCrit(ex+dx, ey)) grid[ey][ex+dx] = EMPTY;
+      }
+    } else {
+      let len = 2 + Math.floor(rng() * 2);
+      for(let dy=0; dy<len; dy++) {
+        if (ey+dy < H-1 && grid[ey+dy][ex] === WALL && !isCrit(ex, ey+dy)) grid[ey+dy][ex] = EMPTY;
+      }
+    }
+  }
+
+  let erPct = cfg.name === 'Hard' ? 0.05 : (cfg.name === 'Medium' ? 0.1 : 0.18);
+  let erSteps = Math.floor(W * H * erPct);
+  for (let i = 0; i < erSteps; i++) {
+    let ex = 1 + Math.floor(rng() * (W - 2));
+    let ey = 1 + Math.floor(rng() * (H - 2));
+    if (grid[ey][ex] === WALL && !isCrit(ex, ey)) {
+      let touchesEmpty = false;
+      if (grid[ey + 1][ex] === EMPTY || grid[ey - 1][ex] === EMPTY || grid[ey][ex + 1] === EMPTY || grid[ey][ex - 1] === EMPTY) touchesEmpty = true;
+      if (touchesEmpty) grid[ey][ex] = EMPTY;
+    }
+  }
+
+  let spikesToPlace = cfg.spikes || 0;
+  let placedSpikes = 0;
+  let spikeAtt = 0;
+  while (placedSpikes < spikesToPlace && spikeAtt < spikesToPlace * 5) {
+      spikeAtt++;
+      let sx = 1 + Math.floor(rng() * (W - 2));
+      let sy = 1 + Math.floor(rng() * (H - 2));
+      if (grid[sy][sx] === WALL && grid[sy - 1][sx] === EMPTY) {
+        if (sy !== portal.y + 1) {
+          let crit = false;
+          for (let b of body) if (b.x === sx && (b.y === sy || b.y + 1 === sy)) crit = true;
+          if (!crit) {
+             grid[sy][sx] = SPIKE;
+             placedSpikes++;
+          }
+        }
+      }
+  }
+
+  const minPathDist = cfg.minPathDist;
+  const minManhattanDist = cfg.minManhattanDist;
+
+  const elig = [];
+  for (let i = bodyLen; i < f.length - 2; i++) {
+    let score = 1;
+    if (f[i-1].x !== f[i+1].x && f[i-1].y !== f[i+1].y) score += 5; 
+    elig.push({idx: i, score: score + rng() * 5, x: f[i].x, y: f[i].y});
+  }
+  
+  elig.sort((a,b) => b.score - a.score);
+
+  const fruits = [];
+  for (let item of elig) {
+    if (fruits.length === cfg.fruits) break;
+    let ok = true;
+    for (let fr of fruits) {
+      let pathDist = Math.abs(item.idx - fr.idx);
+      let manhattan = Math.abs(item.x - fr.x) + Math.abs(item.y - fr.y);
+      if (manhattan < minManhattanDist || pathDist < minPathDist) { 
+        ok = false; break; 
+      }
+    }
+    if (ok) fruits.push({x: item.x, y: item.y, idx: item.idx});
+  }
+  
+  if (fruits.length < cfg.fruits) return null; 
+
+  let turns = 0;
+  for (let i = 1; i < f.length - 1; i++) {
+    if (f[i-1].x !== f[i+1].x && f[i-1].y !== f[i+1].y) turns++;
+  }
+
+  return {W, H, grid, portal, fruits, startBody: body, name: cfg.name, turns};
+}
+
+function generate(cfg, opts = {}) {
+  const attempts = opts.attempts || 2000; 
+  const rng = mulberry32(opts.seed || ((Math.random() * 1e9) | 0));
+  let best = null;
+
+  for (let a = 0; a < attempts; a++) {
+    const lv = genCandidate(cfg, rng);
+    if (!lv) continue;
+
+    const res = solve(lv, opts.nodeCap || (cfg.name === 'Hard' ? 350000 : 150000));
+    if (!res.solvable) continue;
+
+    lv.par = res.minMoves;
+    
+    let minX = lv.W, maxX = -1, minY = lv.H, maxY = -1;
+    let emptyCount = 0;
+    for (let y = 0; y < lv.H; y++) {
+      for (let x = 0; x < lv.W; x++) {
+        if (lv.grid[y][x] !== WALL) { 
+          emptyCount++;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    
+    let trimmedArea = Math.max(1, (maxX - minX + 1) * (maxY - minY + 1));
+    let density = res.minMoves / Math.max(1, emptyCount);
+
+    let score = res.minMoves * 10;
+    score += Math.floor(res.visited / 50); 
+    score += density * 1200; 
+    score -= trimmedArea * 4; 
+    score += (lv.turns || 0) * 50; 
+    
+    if (res.visited < res.minMoves * 2) score -= 400;
+    if (cfg.name === 'Hard') score += lv.fruits.length * 50;
+
+    if (!best || score > best.score) {
+      lv.score = score;
+      best = lv;
+      if (res.minMoves >= cfg.targetMoves && density > 0.8 && res.visited > 10000 && trimmedArea < 50) break;
+    }
+  }
+  return best;
+}
+
+function trimLevel(lv) {
+  if (!lv) return null;
+  const visited = new Set();
+  const q = [{x: lv.portal.x, y: lv.portal.y}];
+  visited.add(lv.portal.x + ',' + lv.portal.y);
+
+  while (q.length > 0) {
+    const curr = q.pop();
+    const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]]; 
+    for (let [dx, dy] of dirs) {
+      const nx = curr.x + dx;
+      const ny = curr.y + dy;
+      if (nx >= 0 && nx < lv.W && ny >= 0 && ny < lv.H) {
+        if (lv.grid[ny][nx] !== WALL && !visited.has(nx + ',' + ny)) {
+          visited.add(nx + ',' + ny); q.push({x: nx, y: ny});
+        }
+      }
+    }
+  }
+
+  for (let y = 0; y < lv.H; y++) {
+    for (let x = 0; x < lv.W; x++) {
+      if (lv.grid[y][x] !== WALL && !visited.has(x + ',' + y)) lv.grid[y][x] = WALL; 
+    }
+  }
+
+  let minX = lv.W, maxX = -1, minY = lv.H, maxY = -1;
+  for (let y = 0; y < lv.H; y++) {
+    for (let x = 0; x < lv.W; x++) {
+      if (lv.grid[y][x] !== WALL) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+
+  minX = Math.max(0, minX - 1); maxX = Math.min(lv.W - 1, maxX + 1);
+  minY = Math.max(0, minY - 1); maxY = Math.min(lv.H - 1, maxY + 1);
+
+  const newW = maxX - minX + 1; const newH = maxY - minY + 1;
+  if (newW === lv.W && newH === lv.H) return lv;
+
+  const newGrid = [];
+  for (let y = minY; y <= maxY; y++) newGrid.push(lv.grid[y].slice(minX, maxX + 1));
+
+  lv.W = newW; lv.H = newH; lv.grid = newGrid;
+  lv.portal.x -= minX; lv.portal.y -= minY;
+  lv.fruits.forEach(f => { f.x -= minX; f.y -= minY; });
+  lv.startBody.forEach(b => { b.x -= minX; b.y -= minY; });
+  return lv;
+}
+
+function makeLevel(params) {
+  const base = {
+    Easy:   {W: 10, H: 11, att: 500},
+    Medium: {W: 13, H: 14, att: 1750},
+    Hard:   {W: 16, H: 18, att: 4000} 
+  };
+  const b = base[params.diff];
+  let bestLv = null;
+
+  const passes = [{dw: 0, dh: 0}, {dw: 2, dh: 2}, {dw: 4, dh: 3}];
+
+  for (let p of passes) {
+    const W = Math.min(24, b.W + p.dw);
+    const H = Math.min(24, b.H + p.dh);
+    const pathLen = Math.max(params.bodyLen + 3, Math.min(W * H * 0.45, Math.max(12, params.moves)));
+
+    const cfg = {
+      name: params.diff, W, H, bodyLen: params.bodyLen, 
+      fruits: params.fruits, pathLen, targetMoves: params.moves, 
+      minManhattanDist: params.minManhattan, minPathDist: params.minPath,
+      spikes: params.spikes
+    };
+    const lv = generate(cfg, {attempts: b.att});
+
+    if (lv) {
+      if (!bestLv || lv.score > bestLv.score) bestLv = lv;
+      if (bestLv.par >= params.moves - 2) return trimLevel(bestLv); 
+    }
+  }
+
+  if (bestLv) return trimLevel(bestLv); 
+
+  const g = Array.from({length: 7}, () => Array(12).fill(WALL));
+  for (let x = 1; x <= 10; x++) g[4][x] = EMPTY;
+  const fallbackFruits = [];
+  for (let i = 0; i < Math.min(4, params.fruits); i++) fallbackFruits.push({x: 4 + i, y: 4});
+  
+  return trimLevel({
+    W: 12, H: 7, grid: g, portal: {x: 10, y: 4}, fruits: fallbackFruits, 
+    startBody: Array.from({length: Math.min(5, params.bodyLen)}, (_, i) => ({x: 2 - i, y: 4})), 
+    name: params.diff, par: params.bodyLen + 2, score: 0
+  });
+}
+
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+
+// Polyfill: ctx.roundRect nie jest wspierany w starszych WebView/przeglądarkach
+if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    let rad;
+    if (typeof r === 'number') rad = [r, r, r, r];
+    else if (Array.isArray(r)) {
+      if (r.length === 1) rad = [r[0], r[0], r[0], r[0]];
+      else if (r.length === 2) rad = [r[0], r[1], r[0], r[1]];
+      else if (r.length === 3) rad = [r[0], r[1], r[2], r[1]];
+      else rad = r;
+    } else rad = [0, 0, 0, 0];
+    const mn = Math.min(Math.abs(w), Math.abs(h)) / 2;
+    let [tl, tr, br, bl] = rad.map(v => Math.min(Math.max(0, v), mn));
+    this.moveTo(x + tl, y);
+    this.arcTo(x + w, y, x + w, y + h, tr);
+    this.arcTo(x + w, y + h, x, y + h, br);
+    this.arcTo(x, y + h, x, y, bl);
+    this.arcTo(x, y, x + w, y, tl);
+    this.closePath();
+    return this;
+  };
+}
+
+const stage = document.getElementById('stage');
+const el = id => document.getElementById(id);
+let DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+
+const state = {
+  mode: 'Adventure', 
+  levelNo: 1,
+  diff: 'Easy', 
+  fruits: 0, 
+  moves: 12, 
+  bodyLen: 2, 
+  minManhattan: 2, 
+  minPath: 3,
+  spikes: 0
+};
+let level = null, game = null;
+
+const PRESET = {
+  Easy:   {fruits: 1, moves: 8, bodyLen: 2, minManhattan: 2, minPath: 3, spikes: 0}, 
+  Medium: {fruits: 2, moves: 18, bodyLen: 3, minManhattan: 2, minPath: 4, spikes: 4}, 
+  Hard:   {fruits: 4, moves: 30, bodyLen: 4, minManhattan: 3, minPath: 6, spikes: 10}
+};
+
+function getAdventureParams(lvl) {
+    let fruits = 0, moves = 12, body = 2, diff = 'Easy', manDist = 2, pathDist = 3, spikes = 0;
+    
+    if (lvl === 1) { fruits = 0; moves = 12; body = 2; }
+    else if (lvl === 2) { fruits = 1; moves = 14; body = 2; }
+    else if (lvl === 3) { fruits = 1; moves = 18; body = 3; }
+    else {
+        if (lvl >= 10) fruits = 4;
+        else if (lvl >= 7) fruits = 3;
+        else if (lvl >= 4) fruits = 2;
+        
+        moves = 18 + Math.floor(lvl * 2.5);
+        body = Math.min(5, 2 + Math.floor((lvl - 1) / 3));
+        
+        if (lvl >= 5) diff = 'Medium';
+        if (lvl >= 10) diff = 'Hard';
+        
+        if (lvl >= 5) spikes = Math.min(15, (lvl - 4) * 2);
+        if (lvl >= 10) spikes = Math.min(35, 10 + (lvl - 9) * 3);
+        
+        if (lvl >= 12) {
+            manDist = Math.max(1, 3 - Math.floor((lvl - 12) / 3));
+            pathDist = Math.min(12, 5 + Math.floor((lvl - 12) / 2));
+            moves = 45 + (lvl - 12) * 4;
+        } else {
+            manDist = diff === 'Hard' ? 3 : 2;
+            pathDist = diff === 'Hard' ? 5 : 3;
+        }
+    }
+    return { diff, fruits, moves, bodyLen: body, minManhattan: manDist, minPath: pathDist, spikes };
+}
+
+function newLevel() {
+  el('gen').classList.add('show');
+  setTimeout(() => {
+    if (state.mode === 'Adventure') {
+      const p = getAdventureParams(state.levelNo);
+      Object.assign(state, p);
+    }
+    
+    el('blVal').textContent = state.bodyLen;
+    el('mdVal').textContent = state.minManhattan;
+    el('pdVal').textContent = state.minPath;
+    el('frVal').textContent = state.fruits;
+    el('mvVal').textContent = state.moves;
+    el('spVal').textContent = state.spikes;
+    document.querySelectorAll('#diff button').forEach(b => {
+      b.classList.toggle('on', b.dataset.d === state.diff);
+    });
+
+    level = makeLevel(state);
+    game = {body: level.startBody.map(c => ({...c})), mask: (1 << level.fruits.length) - 1, moves: 0, history: [], status: 'play'};
+    render.face = 'R';
+    resize();
+    render.snapToBody();
+    
+    el('hLvlLab').textContent = state.mode === 'Adventure' ? 'Poziom' : 'Tryb';
+    el('hLvl').textContent = state.mode === 'Adventure' ? state.levelNo : 'Własny';
+    el('hPar').textContent = level.par || '–';
+    el('ovNext').textContent = state.mode === 'Adventure' ? 'NASTĘPNY POZIOM →' : 'NOWA PLANSZA →';
+    
+    updateHUD(); updateHint();
+    el('gen').classList.remove('show');
+    loop();
+  }, 30);
+}
+
+function updateHUD() {
+  el('hMov').textContent = game.moves;
+  let rem = 0, m = game.mask;
+  while (m) { rem += m & 1; m >>= 1; }
+  let eaten = level.fruits.length - rem;
+  el('hFr').textContent = eaten + '/' + level.fruits.length;
+}
+
+let CELL = 30, OX = 0, OY = 0;
+function resize() {
+  if (!level) return;
+  const r = stage.getBoundingClientRect();
+  const availW = Math.min(r.width - 8, 540), availH = r.height - 8;
+  CELL = Math.max(14, Math.floor(Math.min(availW / level.W, availH / level.H)));
+  const w = CELL * level.W, h = CELL * level.H;
+  cv.style.width = w + 'px'; cv.style.height = h + 'px';
+  cv.width = Math.floor(w * DPR); cv.height = Math.floor(h * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  OX = 0; OY = 0;
+}
+window.addEventListener('resize', () => { resize(); });
+
+const render = {seq: null, idx: 0, t: 0, cur: null, face: 'R', win: 0, pop: 0,
+  snapToBody() { this.cur = game.body.map(c => ({x: c.x, y: c.y})); this.seq = null; },
+};
+
+function alignFromTo(from, to) {
+  if (from.length === to.length) return from.map(c => ({x: c.x, y: c.y}));
+  if (from.length < to.length) {
+    const pad = [];
+    const diff = to.length - from.length;
+    for (let i = 0; i < diff; i++) pad.push({x: from[0].x, y: from[0].y});
+    return pad.concat(from.map(c => ({x: c.x, y: c.y})));
+  }
+  return from.slice(from.length - to.length).map(c => ({x: c.x, y: c.y}));
+}
+
+let animDurMove = 110, animDurFall = 66;
+let bufferedDir = null;
+
+function tryMove(dk) {
+  if (!game || game.status === 'won') return;
+  if (render.seq) { bufferedDir = dk; return; }
+
+  const dir = DIRS[dk];
+  const nx = game.body[0].x + dir.dx;
+  const ny = game.body[0].y + dir.dy;
+
+  // ZMIANA: Zablokowanie ruchu do tyłu (tylko potrząśnięcie planszą, bez auto-cofania)
+  if (game.body.length > 1 && nx === game.body[1].x && ny === game.body[1].y) {
+    bump();
+    return;
+  }
+
+  if (game.status === 'dead') { bump(); return; } 
+  
+  const r = step(level, game.body, game.mask, dk);
+  if (r.status === 'blocked') { bump(); return; }
+  
+  if (dk === 'L' || dk === 'R') render.face = dk;
+  
+  game.history.push({body: game.body.map(c => ({...c})), mask: game.mask});
+  game.moves++;
+  
+  game.body = r.body; game.mask = r.mask;
+  if (r.ate) render.pop = 1;
+  
+  const keys = [game.history[game.history.length-1].body.map(c => ({...c})), ...r.frames.map(fr => fr.map(c => ({...c})))];
+  render.seq = keys; render.idx = 0; render.t = 0;
+  
+  game._pendingWin = (r.status === 'win');
+  game._pendingDead = (r.status === 'dead'); 
+  
+  updateHUD(); loop();
+}
+
+function afterAnim() {
+  render.seq = null;
+  render.snapToBody && (render.cur = game.body.map(c => ({x: c.x, y: c.y})));
+  if (game._pendingWin) { game.status = 'won'; onWin(); return; }
+  if (game._pendingDead) { game.status = 'dead'; updateHint(); return; }
+  if (bufferedDir) { const d = bufferedDir; bufferedDir = null; tryMove(d); }
+}
+function bump() { stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake'); }
+
+let raf = null, last = 0;
+function loop() { if (raf) return; last = performance.now(); raf = requestAnimationFrame(frame); }
+function frame(now) {
+  const dt = now - last; last = now;
+  if (render.seq) {
+    const dur = (render.idx === 0) ? animDurMove : animDurFall;
+    render.t += dt / dur;
+    if (render.t >= 1) {
+      render.t = 0; render.idx++;
+      if (render.idx >= render.seq.length - 1) {
+        render.cur = render.seq[render.seq.length - 1].map(c => ({x: c.x, y: c.y}));
+        render.t = 0; afterAnim();
+      }
+    }
+  }
+  if (render.pop > 0) render.pop = Math.max(0, render.pop - dt / 180);
+  render.win = (game && game.status === 'won') ? Math.min(1, render.win + dt / 600) : 0;
+  
+  draw();
+  raf = requestAnimationFrame(frame);
+}
+
+function curBody() {
+  if (!render.seq) return render.cur;
+  const a = alignFromTo(render.seq[render.idx], render.seq[render.idx + 1]);
+  const b = render.seq[render.idx + 1];
+  const tt = ease(render.t);
+  return b.map((c, i) => ({x: a[i].x + (c.x - a[i].x) * tt, y: a[i].y + (c.y - a[i].y) * tt}));
+}
+function ease(t) { return t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+function px(cx) { return OX + cx * CELL; }
+function py(cy) { return OY + cy * CELL; }
+
+function draw() {
+  if (!level) return;
+  const W = level.W, H = level.H;
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  
+  roundRect(0, 0, W * CELL, H * CELL, 14); ctx.fillStyle = 'rgba(10,5,20,.6)'; ctx.fill();
+  ctx.save(); roundRect(0, 0, W * CELL, H * CELL, 14); ctx.clip();
+  
+  ctx.strokeStyle = 'rgba(255,0,255,.03)'; ctx.lineWidth = 1;
+  for (let x = 1; x < W; x++) { ctx.beginPath(); ctx.moveTo(px(x), 0); ctx.lineTo(px(x), H * CELL); ctx.stroke(); }
+  for (let y = 1; y < H; y++) { ctx.beginPath(); ctx.moveTo(0, py(y)); ctx.lineTo(W * CELL, py(y)); ctx.stroke(); }
+  
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (level.grid[y][x] === WALL) drawRock(x, y);
+      else {
+        if (level.grid[y][x] === SPIKE) drawSpike(x, y);
+      }
+    }
+  }
+  
+  drawPortal(level.portal.x, level.portal.y, game.mask === 0);
+  for (let i = 0; i < level.fruits.length; i++) { if (game.mask & (1 << i)) drawSadPerson(level.fruits[i].x, level.fruits[i].y); }
+  drawTrain(curBody());
+  ctx.restore();
+}
+
+function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+
+function roundRectCorners(x, y, w, h, tl, tr, br, bl) {
+  const mn = Math.min(w, h) / 2;
+  tl = Math.min(tl, mn); tr = Math.min(tr, mn); br = Math.min(br, mn); bl = Math.min(bl, mn);
+  ctx.beginPath();
+  ctx.moveTo(x + tl, y);
+  ctx.lineTo(x + w - tr, y);
+  ctx.arcTo(x + w, y, x + w, y + tr, tr);
+  ctx.lineTo(x + w, y + h - br);
+  ctx.arcTo(x + w, y + h, x + w - br, y + h, br);
+  ctx.lineTo(x + bl, y + h);
+  ctx.arcTo(x, y + h, x, y + h - bl, bl);
+  ctx.lineTo(x, y + tl);
+  ctx.arcTo(x, y, x + tl, y, tl);
+  ctx.closePath();
+}
+
+function drawRock(x, y) {
+  const X = px(x), Y = py(y), c = CELL;
+  
+  const isAlt = ((x + y) % 2 === 0);
+  ctx.fillStyle = isAlt ? '#5c228a' : '#642696';
+  ctx.fillRect(X, Y, c, c);
+  
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(X + 1, Y + 1, c - 2, c - 2);
+  
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fillRect(X + c*0.2, Y + c*0.2, c*0.6, c*0.6);
+}
+
+function drawSpike(x, y) {
+  const X = px(x), Y = py(y), c = CELL;
+  const t = Date.now() / 200;
+  const flash = (Math.sin(t + x + y) + 1) / 2;
+  
+  ctx.fillStyle = '#220022';
+  ctx.fillRect(X + c*0.1, Y + c*0.8, c*0.8, c*0.2);
+  
+  const g = ctx.createLinearGradient(X, Y + c*0.8, X, Y + c*0.2);
+  g.addColorStop(0, `rgba(255, 0, 100, 0.9)`);
+  g.addColorStop(1, `rgba(255, 0, 100, ${0.1 + flash*0.3})`);
+  
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(X + c * 0.2, Y + c * 0.8); ctx.lineTo(X + c * 0.3, Y + c * 0.2); ctx.lineTo(X + c * 0.4, Y + c * 0.8);
+  ctx.moveTo(X + c * 0.6, Y + c * 0.8); ctx.lineTo(X + c * 0.7, Y + c * 0.2); ctx.lineTo(X + c * 0.8, Y + c * 0.8);
+  ctx.fill();
+}
+
+function drawSadPerson(x, y) {
+  const cx = px(x) + CELL / 2;
+  const cy = py(y) + CELL / 2;
+  const t = Date.now() / 1500;
+  const bop = Math.sin(t * 1.5) * CELL * 0.04;
+  
+  const baseY = cy + CELL * 0.3;
+  
+  ctx.fillStyle = '#445566';
+  ctx.beginPath();
+  ctx.roundRect(cx - CELL * 0.2, baseY - CELL * 0.3, CELL * 0.4, CELL * 0.35, CELL * 0.15);
+  ctx.fill();
+  
+  const hx = cx;
+  const hy = baseY - CELL * 0.35 + bop;
+  
+  ctx.fillStyle = '#ffddcc';
+  ctx.beginPath();
+  ctx.arc(hx, hy, CELL * 0.18, 0, 7);
+  ctx.fill();
+  
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); 
+  ctx.arc(hx - CELL * 0.08, hy, CELL * 0.06, 0, 7); 
+  ctx.arc(hx + CELL * 0.08, hy, CELL * 0.06, 0, 7); 
+  ctx.fill();
+  
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); 
+  ctx.arc(hx - CELL * 0.08, hy + CELL*0.02, CELL * 0.03, 0, 7); 
+  ctx.arc(hx + CELL * 0.08, hy + CELL*0.02, CELL * 0.03, 0, 7); 
+  ctx.fill();
+
+  ctx.strokeStyle = '#664433';
+  ctx.lineWidth = Math.max(1, CELL * 0.02);
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(hx - CELL * 0.12, hy - CELL * 0.07);
+  ctx.lineTo(hx - CELL * 0.03, hy - CELL * 0.10);
+  ctx.moveTo(hx + CELL * 0.12, hy - CELL * 0.07);
+  ctx.lineTo(hx + CELL * 0.03, hy - CELL * 0.10);
+  ctx.stroke();
+  
+  ctx.fillStyle = '#33aaff';
+  ctx.beginPath();
+  ctx.arc(hx + CELL * 0.08, hy + CELL * 0.06 + bop*0.2, CELL * 0.025, 0, 7);
+  ctx.fill();
+  
+  ctx.strokeStyle = '#aa6655';
+  ctx.lineWidth = Math.max(1, CELL * 0.035);
+  ctx.beginPath();
+  ctx.arc(hx, hy + CELL * 0.15, CELL * 0.05, Math.PI, 0); 
+  ctx.stroke();
+}
+
+function drawPortal(x, y, active) {
+  const X = px(x) + CELL / 2, Y = py(y) + CELL / 2, R = CELL * 0.36;
+  const t = Date.now() / 500;
+  ctx.save();
+  
+  if (active) {
+    ctx.shadowColor = '#00ffff'; ctx.shadowBlur = CELL * 0.8;
+    ctx.fillStyle = '#ccffff';
+    ctx.beginPath(); ctx.arc(X, Y, R, 0, 7); ctx.fill();
+    
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = Math.max(1, CELL * 0.05);
+    for(let i=-2; i<=2; i++) {
+       ctx.beginPath(); ctx.moveTo(X + i*R*0.3, Y - R); ctx.lineTo(X + i*R*0.3, Y + R); ctx.stroke();
+       ctx.beginPath(); ctx.moveTo(X - R, Y + i*R*0.3); ctx.lineTo(X + R, Y + i*R*0.3); ctx.stroke();
+    }
+    
+    ctx.globalCompositeOperation = 'screen';
+    for (let k = 0; k < 4; k++) {
+      ctx.fillStyle = `hsla(${(t*100 + k*90)%360}, 100%, 60%, 0.4)`;
+      ctx.beginPath();
+      ctx.moveTo(X, Y);
+      ctx.arc(X, Y, R*1.8, t*2 + k*Math.PI/2, t*2 + k*Math.PI/2 + 0.5);
+      ctx.fill();
+    }
+  } else {
+    ctx.fillStyle = '#334455';
+    ctx.beginPath(); ctx.arc(X, Y, R, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#112233';
+    ctx.lineWidth = Math.max(1, CELL * 0.05);
+    for(let i=-2; i<=2; i++) {
+       ctx.beginPath(); ctx.moveTo(X + i*R*0.3, Y - R); ctx.lineTo(X + i*R*0.3, Y + R); ctx.stroke();
+       ctx.beginPath(); ctx.moveTo(X - R, Y + i*R*0.3); ctx.lineTo(X + R, Y + i*R*0.3); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+function drawTrain(body) {
+  if (!body || !body.length) return;
+  const t = Date.now() / 150;
+  const pts = body.map(c => ({x: px(c.x) + CELL / 2, y: py(c.y) + CELL / 2}));
+  const isDead = game && game.status === 'dead';
+  const unifiedBop = isDead ? 0 : Math.sin(t * 1.5) * CELL * 0.08;
+  const headUnifiedBop = isDead ? 0 : Math.sin(t * 1.5 + 0.5) * CELL * 0.04;
+
+  // ETAP 1: Rysujemy najpierw same ciała i głowy
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const pt = pts[i];
+    const isHead = (i === 0);
+    const prevPt = isHead ? null : pts[i-1];
+    
+    let dir = render.face; 
+    if (isHead && pts.length > 1) {
+       const dx = pt.x - pts[1].x;
+       if (Math.abs(dx) > 0.01) { dir = dx > 0 ? 'R' : 'L'; } 
+    } else if (!isHead && prevPt) {
+       const dx = prevPt.x - pt.x;
+       if (Math.abs(dx) > 0.01) { dir = dx > 0 ? 'R' : 'L'; } 
+    }
+    
+    const hue = (i * 50 + t * 20) % 360; 
+    const cx = pt.x;
+    const cy = pt.y + unifiedBop + CELL * 0.1;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    if (!isHead) ctx.scale(0.75, 0.75);
+    ctx.translate(-cx, -cy);
+
+    // ZMIANA: Poszerzony tułów z 0.6 na 0.7
+    ctx.fillStyle = `hsl(${hue}, 90%, 60%)`;
+    ctx.beginPath();
+    ctx.roundRect(cx - CELL * 0.35, cy - CELL * 0.1, CELL * 0.7, CELL * 0.4, CELL * 0.1);
+    ctx.fill();
+
+    // But: mały prostokątny, zaokrąglony, obrócony w kierunku ruchu
+    {
+      const f = (dir === 'R') ? 1 : -1;            // kierunek "noska"
+      const shoeW = CELL * 0.30;
+      const shoeH = CELL * 0.11;
+      const shoeY = cy + CELL * 0.27;              // tuż pod tułowiem
+      const shoeX = cx - shoeW / 2 + f * CELL * 0.025; // lekko przesunięty w stronę ruchu
+      const bigR = shoeH * 0.95;                   // mocno zaokrąglony narożnik (nosek)
+      const smR = shoeH * 0.28;                    // pozostałe narożniki
+      // Podeszwa (minimalnie jaśniejsza) - cały kształt, jasny
+      ctx.fillStyle = '#34343f';
+      if (f > 0) roundRectCorners(shoeX, shoeY, shoeW, shoeH, smR, bigR, smR, smR);
+      else       roundRectCorners(shoeX, shoeY, shoeW, shoeH, bigR, smR, smR, smR);
+      ctx.fill();
+      // Cholewka (ciemniejsza górna część zostawia jaśniejszy pasek podeszwy na dole)
+      ctx.fillStyle = '#23232c';
+      if (f > 0) roundRectCorners(shoeX, shoeY, shoeW, shoeH * 0.72, smR, bigR, smR * 0.5, smR);
+      else       roundRectCorners(shoeX, shoeY, shoeW, shoeH * 0.72, bigR, smR, smR, smR * 0.5);
+      ctx.fill();
+      // Dwie mini sznurówki po stronie pięty
+      ctx.strokeStyle = '#dcdce8';
+      ctx.lineWidth = Math.max(0.6, CELL * 0.016);
+      ctx.lineCap = 'round';
+      const laceX = cx - f * shoeW * 0.16;
+      ctx.beginPath();
+      ctx.moveTo(laceX - CELL * 0.035, shoeY + CELL * 0.06);
+      ctx.lineTo(laceX + CELL * 0.005, shoeY + CELL * 0.02);
+      ctx.moveTo(laceX + CELL * 0.005, shoeY + CELL * 0.06);
+      ctx.lineTo(laceX + CELL * 0.045, shoeY + CELL * 0.02);
+      ctx.stroke();
+    }
+    
+    // Głowa
+    const hx = cx;
+    const hy = cy - CELL * 0.35 + headUnifiedBop;
+    
+    ctx.fillStyle = '#ffddcc';
+    ctx.beginPath(); ctx.arc(hx, hy, CELL * 0.22, 0, 7); ctx.fill();
+    
+    const eyeOffX = (dir === 'R') ? 0.1 : -0.1;
+    
+    if (isHead) {
+       ctx.fillStyle = '#111'; 
+       ctx.fillRect(hx - CELL*0.1, hy - CELL*0.02, CELL*0.2, CELL*0.04);
+       
+       const sx = hx + eyeOffX * CELL + (dir === 'R' ? 1 : -1) * CELL * 0.08;
+       ctx.beginPath();
+       ctx.roundRect(sx - CELL*0.06, hy - CELL*0.05, CELL*0.12, CELL*0.1, CELL*0.03);
+       ctx.fill();
+       
+       ctx.strokeStyle = '#aa6655';
+       ctx.lineWidth = CELL * 0.03;
+       ctx.beginPath();
+       if (dir === 'R') {
+           ctx.arc(hx + CELL*0.1, hy + CELL*0.1, CELL*0.16, 0, Math.PI/2);
+       } else {
+           ctx.arc(hx - CELL*0.1, hy + CELL*0.1, CELL*0.16, Math.PI/2, Math.PI);
+       }
+       ctx.stroke();
+    } else {
+       if (isDead) {
+          ctx.strokeStyle = '#000'; ctx.lineWidth = Math.max(1, CELL * 0.04);
+          const drawX = (ex, ey) => {
+            ctx.beginPath();
+            ctx.moveTo(ex-CELL*0.05, ey-CELL*0.05); ctx.lineTo(ex+CELL*0.05, ey+CELL*0.05);
+            ctx.moveTo(ex+CELL*0.05, ey-CELL*0.05); ctx.lineTo(ex-CELL*0.05, ey+CELL*0.05);
+            ctx.stroke();
+          };
+          drawX(hx + eyeOffX * CELL + (dir === 'R' ? 1 : -1) * CELL * 0.08, hy);
+       } else {
+          ctx.fillStyle = '#fff';
+          const ex = hx + eyeOffX * CELL + (dir === 'R' ? 1 : -1) * CELL * 0.08;
+          ctx.beginPath(); ctx.arc(ex, hy, CELL * 0.06, 0, 7); ctx.fill();
+          
+          ctx.fillStyle = '#000';
+          ctx.beginPath(); ctx.arc(ex + (dir === 'R' ? 1 : -1) * CELL * 0.02, hy, CELL * 0.03, 0, 7); ctx.fill();
+       }
+       
+       if (!isDead) {
+           ctx.strokeStyle = '#aa6655';
+           ctx.lineWidth = CELL * 0.03;
+           ctx.beginPath();
+           if (dir === 'R') {
+               ctx.arc(hx + CELL*0.1, hy + CELL*0.1, CELL*0.16, 0, Math.PI/2);
+           } else {
+               ctx.arc(hx - CELL*0.1, hy + CELL*0.1, CELL*0.16, Math.PI/2, Math.PI);
+           }
+           ctx.stroke();
+       }
+    }
+    
+    // Czapka
+    if (isHead) {
+        const hatBaseY = hy - CELL * 0.18;
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        if (dir === 'R') {
+            ctx.ellipse(hx + CELL * 0.15, hatBaseY + CELL * 0.05, CELL * 0.15, CELL * 0.06, 0, 0, 7);
+        } else {
+            ctx.ellipse(hx - CELL * 0.15, hatBaseY + CELL * 0.05, CELL * 0.15, CELL * 0.06, 0, 0, 7);
+        }
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(hx, hatBaseY - CELL * 0.05, CELL * 0.25, CELL * 0.15, 0, 0, 7);
+        ctx.fill();
+        
+        ctx.fillStyle = '#001133';
+        ctx.beginPath();
+        ctx.ellipse(hx, hatBaseY, CELL * 0.23, CELL * 0.08, 0, 0, 7);
+        ctx.fill();
+        
+        ctx.fillStyle = '#ffcc00';
+        ctx.beginPath();
+        if (dir === 'R') {
+            ctx.ellipse(hx + CELL*0.18, hatBaseY, CELL*0.04, CELL*0.06, 0, 0, 7);
+        } else {
+            ctx.ellipse(hx - CELL*0.18, hatBaseY, CELL*0.04, CELL*0.06, 0, 0, 7);
+        }
+        ctx.fill();
+    }
+    ctx.restore();
+  }
+  
+  // ETAP 2: Rysujemy same dłonie, żeby pokrywały cokolwiek jest pod nimi (plecy ludzika z przodu)
+  for (let i = pts.length - 1; i >= 1; i--) {
+    const pt = pts[i];
+    const prevPt = pts[i-1];
+    
+    const hue = (i * 50 + t * 20) % 360; 
+    const cx = pt.x;
+    const cy = pt.y + unifiedBop + CELL * 0.1;
+
+    ctx.strokeStyle = `hsl(${hue}, 90%, 60%)`;
+    ctx.lineWidth = CELL * 0.12 * 0.75;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    
+    const targetX = prevPt.x;
+    const targetY = prevPt.y + unifiedBop + CELL * 0.1;
+    
+    const armLen = 0.765; // skrócone o 10% 
+    const handX = cx + (targetX - cx) * armLen;
+    const handY = cy + (targetY - cy) * armLen;
+    
+    ctx.moveTo(cx, cy); ctx.lineTo(handX, handY); ctx.stroke();
+    
+    ctx.fillStyle = '#ffddcc'; 
+    ctx.beginPath(); ctx.arc(handX, handY, CELL * 0.08 * 0.75, 0, 7); ctx.fill();
+  }
+}
+
+function onWin() {
+  const par = level.par || game.moves;
+  const stars = game.moves <= par ? 3 : (game.moves <= par + 2 ? 2 : 1);
+  el('ovStars').textContent = '★★★☆☆'.slice(3 - stars, 6 - stars);
+  el('ovTitle').textContent = stars === 3 ? 'Zabawa Udana!' : 'Rozwiązane!';
+  el('ovText').innerHTML = `Ukończono w <b>${game.moves}</b> ruchach (optymalnie <b>${par}</b>).<br>Dołączyło <b>${level.fruits.length}</b> ludków.`;
+  el('ov').classList.add('show');
+}
+
+el('ovNext').onclick = () => { 
+  el('ov').classList.remove('show'); 
+  if (state.mode === 'Adventure') state.levelNo++;
+  newLevel(); 
+};
+
+el('btnMenu').onclick = () => { el('menuOv').classList.add('show'); };
+el('menuClose').onclick = () => { el('menuOv').classList.remove('show'); };
+
+document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#modeSeg button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); state.mode = b.dataset.m;
+  el('customSettings').style.display = state.mode === 'Custom' ? 'block' : 'none';
+});
+
+document.querySelectorAll('#diff button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#diff button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); state.diff = b.dataset.d;
+  Object.assign(state, PRESET[state.diff]);
+  el('frVal').textContent = state.fruits; el('mvVal').textContent = state.moves;
+  el('blVal').textContent = state.bodyLen; el('mdVal').textContent = state.minManhattan; el('pdVal').textContent = state.minPath;
+  el('spVal').textContent = state.spikes;
+});
+
+function bindStepper(idVal, idMinus, idPlus, min, max, stateKey) {
+  el(idPlus).onclick = () => { state[stateKey] = Math.min(max, state[stateKey] + 1); el(idVal).textContent = state[stateKey]; };
+  el(idMinus).onclick = () => { state[stateKey] = Math.max(min, state[stateKey] - 1); el(idVal).textContent = state[stateKey]; };
+}
+
+bindStepper('spVal', 'spMinus', 'spPlus', 0, 40, 'spikes');
+bindStepper('frVal', 'frMinus', 'frPlus', 0, 8, 'fruits');
+bindStepper('mvVal', 'mvMinus', 'mvPlus', 4, 60, 'moves');
+bindStepper('blVal', 'blMinus', 'blPlus', 2, 6, 'bodyLen');
+bindStepper('mdVal', 'mdMinus', 'mdPlus', 1, 5, 'minManhattan');
+bindStepper('pdVal', 'pdMinus', 'pdPlus', 2, 15, 'minPath');
+
+el('btnNew').onclick = () => { 
+  el('menuOv').classList.remove('show'); 
+  if (state.mode === 'Adventure') state.levelNo = 1; 
+  newLevel(); 
+};
+
+el('btnUndo').onclick = () => {
+  if (!game || !game.history.length || game.status === 'won') return;
+  render.seq = null; bufferedDir = null;
+  const h = game.history.pop(); game.body = h.body.map(c => ({...c})); game.mask = h.mask; game.moves = Math.max(0, game.moves - 1);
+  game.status = 'play'; game._pendingDead = false;
+  render.snapToBody(); updateHUD(); updateHint(); loop();
+};
+
+el('btnReset').onclick = () => {
+  el('menuOv').classList.remove('show');
+  if (!game) return; render.seq = null; bufferedDir = null;
+  game.body = level.startBody.map(c => ({...c})); game.mask = (1 << level.fruits.length) - 1; game.moves = 0; game.history = []; game.status = 'play'; game._pendingWin = false; game._pendingDead = false;
+  el('ov').classList.remove('show'); render.snapToBody(); updateHUD(); updateHint(); loop();
+};
+document.querySelectorAll('.pad button').forEach(b => b.onclick = () => tryMove(b.dataset.dir));
+
+window.addEventListener('keydown', e => {
+  const m = {ArrowUp: 'U', ArrowDown: 'D', ArrowLeft: 'L', ArrowRight: 'R', w: 'U', s: 'D', a: 'L', d: 'R'};
+  if (m[e.key]) { e.preventDefault(); tryMove(m[e.key]); }
+  if (e.key === 'z') el('btnUndo').onclick(); 
+  if (e.key === 'r' && !el('menuOv').classList.contains('show')) el('btnReset').onclick();
+});
+
+let tStart = null;
+stage.addEventListener('touchstart', e => { const t = e.touches[0]; tStart = {x: t.clientX, y: t.clientY, time: Date.now()}; }, {passive: true});
+stage.addEventListener('touchend', e => {
+  if (!tStart || el('menuOv').classList.contains('show') || el('ov').classList.contains('show')) return; 
+  const t = e.changedTouches[0];
+  const dx = t.clientX - tStart.x, dy = t.clientY - tStart.y;
+  const ax = Math.abs(dx), ay = Math.abs(dy);
+  if (Math.max(ax, ay) < 18) { tStart = null; return; }
+  if (ax > ay) tryMove(dx > 0 ? 'R' : 'L'); else tryMove(dy > 0 ? 'D' : 'U');
+  tStart = null;
+}, {passive: true});
+
+window.addEventListener('load', () => { DPR = Math.min(window.devicePixelRatio || 1, 2.5); resize(); render.snapToBody && render.snapToBody(); draw(); });
+requestAnimationFrame(newLevel);
+</script>
+</body>
+</html>
